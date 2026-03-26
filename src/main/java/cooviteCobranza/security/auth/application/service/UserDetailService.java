@@ -1,4 +1,4 @@
-package cooviteCobranza.security;
+package cooviteCobranza.security.auth.application.service;
 
 import cooviteCobranza.security.auth.domain.model.User;
 import cooviteCobranza.security.auth.domain.repository.UserRepository;

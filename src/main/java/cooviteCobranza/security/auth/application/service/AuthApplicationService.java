@@ -1,4 +1,4 @@
-package cooviteCobranza.security.auth.application;
+package cooviteCobranza.security.auth.application.service;
 
 import cooviteCobranza.security.auth.application.dto.AuthResponse;
 import cooviteCobranza.security.auth.application.dto.LoginRequest;

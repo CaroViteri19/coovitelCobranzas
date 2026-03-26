@@ -1,6 +1,6 @@
 package cooviteCobranza.security.auth.infrastructure.web;
 
-import cooviteCobranza.security.auth.application.AuthApplicationService;
+import cooviteCobranza.security.auth.application.service.AuthApplicationService;
 import cooviteCobranza.security.auth.application.dto.AuthResponse;
 import cooviteCobranza.security.auth.application.dto.LoginRequest;
 import cooviteCobranza.security.auth.application.dto.RegisterUserRequest;
