@@ -1,4 +1,4 @@
-package coovitelCobranza.cobranzas.politicas.infrastructure.persistence;
+package coovitelCobranza.cobranzas.politicas.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

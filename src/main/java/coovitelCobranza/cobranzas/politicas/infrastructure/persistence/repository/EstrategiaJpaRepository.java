@@ -1,5 +1,6 @@
-package coovitelCobranza.cobranzas.politicas.infrastructure.persistence;
+package coovitelCobranza.cobranzas.politicas.infrastructure.persistence.repository;
 
+import coovitelCobranza.cobranzas.politicas.infrastructure.persistence.entity.EstrategiaJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

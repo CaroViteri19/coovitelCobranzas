@@ -2,8 +2,13 @@ package coovitelCobranza.cobranzas.interaccion.infrastructure.web;
 
 import coovitelCobranza.cobranzas.interaccion.application.dto.ActualizarResultadoInteraccionRequest;
 import coovitelCobranza.cobranzas.interaccion.application.dto.CrearInteraccionRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.GetInteractionByIdRequest;
 import coovitelCobranza.cobranzas.interaccion.application.dto.InteraccionResponse;
-import coovitelCobranza.cobranzas.interaccion.application.service.InteraccionApplicationService;
+import coovitelCobranza.cobranzas.interaccion.application.dto.ListInteractionsByCaseRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.UpdateInteractionResultRequest;
+import coovitelCobranza.cobranzas.interaccion.application.service.InteractionApplicationService;
+import coovitelCobranza.cobranzas.interaccion.application.dto.CreateInteractionRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.InteractionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,39 +16,40 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/interacciones")
+@RequestMapping("/api/v1/interactions")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class InteraccionController {
 
-    private final InteraccionApplicationService interaccionApplicationService;
+    private final InteractionApplicationService interactionApplicationService;
 
-    public InteraccionController(InteraccionApplicationService interaccionApplicationService) {
-        this.interaccionApplicationService = interaccionApplicationService;
+    public InteraccionController(InteractionApplicationService interactionApplicationService) {
+        this.interactionApplicationService = interactionApplicationService;
     }
 
     @PostMapping
-    public ResponseEntity<InteraccionResponse> crear(@RequestBody CrearInteraccionRequest request) {
-        InteraccionResponse response = interaccionApplicationService.crearInteraccion(request);
+    public ResponseEntity<InteractionResponse> create(@RequestBody CreateInteractionRequest request) {
+        InteractionResponse response = interactionApplicationService.createInteraction(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<InteraccionResponse> obtenerPorId(@PathVariable Long id) {
-        InteraccionResponse response = interaccionApplicationService.obtenerPorId(id);
+    @PostMapping("/search/id")
+    public ResponseEntity<InteractionResponse> getById(@RequestBody GetInteractionByIdRequest request) {
+        InteractionResponse response = interactionApplicationService.getById(request.interactionId());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/caso/{casoGestionId}")
-    public ResponseEntity<List<InteraccionResponse>> listarPorCasoGestion(@PathVariable Long casoGestionId) {
-        List<InteraccionResponse> response = interaccionApplicationService.listarPorCasoGestion(casoGestionId);
+    @PostMapping("/search/case")
+    public ResponseEntity<List<InteractionResponse>> listByCase(@RequestBody ListInteractionsByCaseRequest request) {
+        List<InteractionResponse> response = interactionApplicationService.listByCase(request.caseId());
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}/resultado")
-    public ResponseEntity<InteraccionResponse> actualizarResultado(
-            @PathVariable Long id,
-            @RequestBody ActualizarResultadoInteraccionRequest request) {
-        InteraccionResponse response = interaccionApplicationService.actualizarResultado(id, request);
+    @PostMapping("/update-result")
+    public ResponseEntity<InteractionResponse> updateResult(@RequestBody UpdateInteractionResultRequest request) {
+        InteractionResponse response = interactionApplicationService.updateResult(
+                request.interactionId(),
+                request
+        );
         return ResponseEntity.ok(response);
     }
 }

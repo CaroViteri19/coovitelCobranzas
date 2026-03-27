@@ -1,6 +1,8 @@
 package coovitelCobranza.cobranzas.auditoria.application.service;
 
+import coovitelCobranza.cobranzas.auditoria.application.dto.AuditEventResponse;
 import coovitelCobranza.cobranzas.auditoria.application.dto.AuditoriaEventoResponse;
+import coovitelCobranza.cobranzas.auditoria.application.dto.RegisterAuditRequest;
 import coovitelCobranza.cobranzas.auditoria.application.dto.RegistrarAuditoriaRequest;
 import coovitelCobranza.cobranzas.auditoria.application.exception.AuditoriaBusinessException;
 import coovitelCobranza.cobranzas.auditoria.domain.model.AuditoriaEvento;
@@ -24,24 +26,53 @@ public class AuditoriaApplicationService {
     }
 
     @Transactional
-    public void registrar(RegistrarAuditoriaRequest request) {
+    public void register(RegisterAuditRequest request) {
         try {
             auditoriaService.registrarEvento(
-                    request.entidad(),
-                    request.entidadId(),
-                    request.accion(),
-                    request.usuario(),
-                    request.detalle()
+                    request.entityType(),
+                    request.entityId(),
+                    request.action(),
+                    request.user(),
+                    request.details()
             );
         } catch (Exception e) {
-            throw new AuditoriaBusinessException("Error al registrar auditoría", e);
+            throw new AuditoriaBusinessException("Error registering audit event", e);
         }
     }
 
     @Transactional(readOnly = true)
+    public List<AuditEventResponse> listByEntity(String entityType, Long entityId) {
+        List<AuditoriaEvento> eventos = repository.findByEntidadAndEntidadIdOrderByCreatedAtDesc(entityType, entityId);
+        return eventos.stream().map(AuditEventResponse::fromDomain).toList();
+    }
+
+    // Backward-compatible wrappers during migration to English API.
+    @Deprecated
+    @Transactional
+    public void registrar(RegistrarAuditoriaRequest request) {
+        register(new RegisterAuditRequest(
+                request.entidad(),
+                request.entidadId(),
+                request.accion(),
+                request.usuario(),
+                request.detalle()
+        ));
+    }
+
+    @Deprecated
+    @Transactional(readOnly = true)
     public List<AuditoriaEventoResponse> listarPorEntidad(String entidad, Long entidadId) {
-        List<AuditoriaEvento> eventos = repository.findByEntidadAndEntidadIdOrderByCreatedAtDesc(entidad, entidadId);
-        return eventos.stream().map(AuditoriaEventoResponse::fromDomain).toList();
+        return listByEntity(entidad, entidadId).stream()
+                .map(event -> new AuditoriaEventoResponse(
+                        event.id(),
+                        event.entityType(),
+                        event.entityId(),
+                        event.action(),
+                        event.user(),
+                        event.details(),
+                        event.createdAt()
+                ))
+                .toList();
     }
 }
 

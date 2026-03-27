@@ -31,7 +31,7 @@ public class ObligacionExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException exception) {
-        String message = "Solicitud invalida";
+        String message = "Invalid request";
         FieldError fieldError = exception.getBindingResult().getFieldError();
         if (fieldError != null && fieldError.getDefaultMessage() != null) {
             message = fieldError.getDefaultMessage();

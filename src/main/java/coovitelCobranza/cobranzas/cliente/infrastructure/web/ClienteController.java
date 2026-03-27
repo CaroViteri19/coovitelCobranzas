@@ -4,13 +4,17 @@ import coovitelCobranza.cobranzas.cliente.application.dto.ActualizarContactoClie
 import coovitelCobranza.cobranzas.cliente.application.dto.ActualizarConsentimientosClienteRequest;
 import coovitelCobranza.cobranzas.cliente.application.dto.ClienteResponse;
 import coovitelCobranza.cobranzas.cliente.application.dto.CrearClienteRequest;
+import coovitelCobranza.cobranzas.cliente.application.dto.GetClientByDocumentRequest;
+import coovitelCobranza.cobranzas.cliente.application.dto.GetClientByIdRequest;
+import coovitelCobranza.cobranzas.cliente.application.dto.UpdateClientConsentsRequest;
+import coovitelCobranza.cobranzas.cliente.application.dto.UpdateClientContactRequest;
 import coovitelCobranza.cobranzas.cliente.application.service.ClienteApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/clientes")
+@RequestMapping("/api/v1/clients")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ClienteController {
 
@@ -21,38 +25,45 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<ClienteResponse> crear(@RequestBody CrearClienteRequest request) {
+    public ResponseEntity<ClienteResponse> create(@RequestBody CrearClienteRequest request) {
         ClienteResponse response = clienteApplicationService.crearCliente(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ClienteResponse> obtenerPorId(@PathVariable Long id) {
-        ClienteResponse response = clienteApplicationService.obtenerPorId(id);
+    @PostMapping("/search/id")
+    public ResponseEntity<ClienteResponse> getById(@RequestBody GetClientByIdRequest request) {
+        ClienteResponse response = clienteApplicationService.obtenerPorId(request.clientId());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/documento/{tipoDocumento}/{numeroDocumento}")
-    public ResponseEntity<ClienteResponse> obtenerPorDocumento(
-            @PathVariable String tipoDocumento,
-            @PathVariable String numeroDocumento) {
-        ClienteResponse response = clienteApplicationService.obtenerPorDocumento(tipoDocumento, numeroDocumento);
+    @PostMapping("/search/document")
+    public ResponseEntity<ClienteResponse> getByDocument(@RequestBody GetClientByDocumentRequest request) {
+        ClienteResponse response = clienteApplicationService.obtenerPorDocumento(
+                request.documentType(),
+                request.documentNumber()
+        );
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}/contacto")
-    public ResponseEntity<ClienteResponse> actualizarContacto(
-            @PathVariable Long id,
-            @RequestBody ActualizarContactoClienteRequest request) {
-        ClienteResponse response = clienteApplicationService.actualizarContacto(id, request);
+    @PostMapping("/update/contact")
+    public ResponseEntity<ClienteResponse> updateContact(@RequestBody UpdateClientContactRequest request) {
+        ClienteResponse response = clienteApplicationService.actualizarContacto(
+                request.clientId(),
+                new ActualizarContactoClienteRequest(request.phone(), request.email())
+        );
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}/consentimientos")
-    public ResponseEntity<ClienteResponse> actualizarConsentimientos(
-            @PathVariable Long id,
-            @RequestBody ActualizarConsentimientosClienteRequest request) {
-        ClienteResponse response = clienteApplicationService.actualizarConsentimientos(id, request);
+    @PostMapping("/update/consents")
+    public ResponseEntity<ClienteResponse> updateConsents(@RequestBody UpdateClientConsentsRequest request) {
+        ClienteResponse response = clienteApplicationService.actualizarConsentimientos(
+                request.clientId(),
+                new ActualizarConsentimientosClienteRequest(
+                        request.acceptsWhatsApp(),
+                        request.acceptsSms(),
+                        request.acceptsEmail()
+                )
+        );
         return ResponseEntity.ok(response);
     }
 }

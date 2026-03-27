@@ -1,8 +1,8 @@
 package coovitelCobranza.cobranzas.politicas.infrastructure.web;
 
-import coovitelCobranza.cobranzas.politicas.application.exception.EstrategiaNotFoundException;
-import coovitelCobranza.cobranzas.politicas.application.exception.PoliticaNotFoundException;
-import coovitelCobranza.cobranzas.politicas.application.exception.PoliticasBusinessException;
+import coovitelCobranza.cobranzas.politicas.application.exception.StrategyNotFoundException;
+import coovitelCobranza.cobranzas.politicas.application.exception.PolicyNotFoundException;
+import coovitelCobranza.cobranzas.politicas.application.exception.PolicyBusinessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,32 +15,32 @@ import java.util.Map;
 @RestControllerAdvice
 public class PoliticasExceptionHandler {
 
-    @ExceptionHandler(EstrategiaNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleEstrategiaNotFoundException(EstrategiaNotFoundException ex) {
+    @ExceptionHandler(StrategyNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleStrategyNotFoundException(StrategyNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Estrategia no encontrada");
+        body.put("error", "Strategy not found");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
-    @ExceptionHandler(PoliticaNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handlePoliticaNotFoundException(PoliticaNotFoundException ex) {
+    @ExceptionHandler(PolicyNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handlePolicyNotFoundException(PolicyNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Política no encontrada");
+        body.put("error", "Policy not found");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
-    @ExceptionHandler(PoliticasBusinessException.class)
-    public ResponseEntity<Map<String, Object>> handlePoliticasBusinessException(PoliticasBusinessException ex) {
+    @ExceptionHandler(PolicyBusinessException.class)
+    public ResponseEntity<Map<String, Object>> handlePolicyBusinessException(PolicyBusinessException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Error de negocio");
+        body.put("error", "Business rule violation");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
@@ -50,7 +50,7 @@ public class PoliticasExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Error interno del servidor");
+        body.put("error", "Internal server error");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }

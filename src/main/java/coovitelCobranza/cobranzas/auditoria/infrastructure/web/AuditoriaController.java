@@ -1,7 +1,8 @@
 package coovitelCobranza.cobranzas.auditoria.infrastructure.web;
 
 import coovitelCobranza.cobranzas.auditoria.application.dto.AuditoriaEventoResponse;
-import coovitelCobranza.cobranzas.auditoria.application.dto.RegistrarAuditoriaRequest;
+import coovitelCobranza.cobranzas.auditoria.application.dto.ListAuditEventsByEntityRequest;
+import coovitelCobranza.cobranzas.auditoria.application.dto.RegisterAuditRequest;
 import coovitelCobranza.cobranzas.auditoria.application.service.AuditoriaApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,8 +10,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Audit REST Controller
+ * 
+ * Security: All sensitive data (entity IDs) is received in request body, not in path.
+ * This ensures data is encrypted in transit via HTTPS.
+ */
 @RestController
-@RequestMapping("/api/auditoria")
+@RequestMapping("/api/v1/audit")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AuditoriaController {
 
@@ -20,16 +27,27 @@ public class AuditoriaController {
         this.service = service;
     }
 
-    @PostMapping("/eventos")
-    public ResponseEntity<Void> registrar(@RequestBody RegistrarAuditoriaRequest request) {
-        service.registrar(request);
+    /**
+     * Register an audit event.
+     * 
+     * @param request the audit event to register
+     * @return 201 Created
+     */
+    @PostMapping("/events")
+    public ResponseEntity<Void> registerEvent(@RequestBody RegisterAuditRequest request) {
+        service.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping("/eventos/{entidad}/{entidadId}")
-    public ResponseEntity<List<AuditoriaEventoResponse>> listarPorEntidad(@PathVariable String entidad,
-                                                                          @PathVariable Long entidadId) {
-        return ResponseEntity.ok(service.listarPorEntidad(entidad, entidadId));
+    /**
+     * List audit events for an entity.
+     * 
+     * @param request contains entityType and entityId in encrypted body
+     * @return list of audit events
+     */
+    @PostMapping("/events/search")
+    public ResponseEntity<List<AuditoriaEventoResponse>> listByEntity(@RequestBody ListAuditEventsByEntityRequest request) {
+        return ResponseEntity.ok(service.listarPorEntidad(request.entityType(), request.entityId()));
     }
 }
 

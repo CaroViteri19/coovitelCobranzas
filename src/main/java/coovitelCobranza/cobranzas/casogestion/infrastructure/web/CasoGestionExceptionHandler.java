@@ -1,7 +1,7 @@
 package coovitelCobranza.cobranzas.casogestion.infrastructure.web;
 
-import coovitelCobranza.cobranzas.casogestion.application.exception.CasoGestionBusinessException;
-import coovitelCobranza.cobranzas.casogestion.application.exception.CasoGestionNotFoundException;
+import coovitelCobranza.cobranzas.casogestion.application.exception.CaseBusinessException;
+import coovitelCobranza.cobranzas.casogestion.application.exception.CaseNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,22 +14,22 @@ import java.util.Map;
 @RestControllerAdvice
 public class CasoGestionExceptionHandler {
 
-    @ExceptionHandler(CasoGestionNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleCasoGestionNotFoundException(CasoGestionNotFoundException ex) {
+    @ExceptionHandler(CaseNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleCaseNotFoundException(CaseNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Caso de gestión no encontrado");
+        body.put("error", "Case not found");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
-    @ExceptionHandler(CasoGestionBusinessException.class)
-    public ResponseEntity<Map<String, Object>> handleCasoGestionBusinessException(CasoGestionBusinessException ex) {
+    @ExceptionHandler(CaseBusinessException.class)
+    public ResponseEntity<Map<String, Object>> handleCaseBusinessException(CaseBusinessException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Error de negocio");
+        body.put("error", "Business rule violation");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
@@ -39,7 +39,7 @@ public class CasoGestionExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Error interno del servidor");
+        body.put("error", "Internal server error");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }

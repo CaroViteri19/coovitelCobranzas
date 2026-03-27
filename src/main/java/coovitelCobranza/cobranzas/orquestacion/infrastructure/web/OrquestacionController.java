@@ -1,6 +1,8 @@
 package coovitelCobranza.cobranzas.orquestacion.infrastructure.web;
 
 import coovitelCobranza.cobranzas.orquestacion.application.dto.EnviarOrquestacionRequest;
+import coovitelCobranza.cobranzas.orquestacion.application.dto.GetOrchestrationByIdRequest;
+import coovitelCobranza.cobranzas.orquestacion.application.dto.ListOrchestrationByCaseRequest;
 import coovitelCobranza.cobranzas.orquestacion.application.dto.OrquestacionEjecucionResponse;
 import coovitelCobranza.cobranzas.orquestacion.application.service.OrquestacionApplicationService;
 import org.springframework.http.HttpStatus;
@@ -10,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orquestacion")
+@RequestMapping("/api/v1/orchestration")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class OrquestacionController {
 
@@ -20,19 +22,19 @@ public class OrquestacionController {
         this.service = service;
     }
 
-    @PostMapping("/enviar")
-    public ResponseEntity<OrquestacionEjecucionResponse> enviar(@RequestBody EnviarOrquestacionRequest request) {
+    @PostMapping("/send")
+    public ResponseEntity<OrquestacionEjecucionResponse> send(@RequestBody EnviarOrquestacionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.enviar(request));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<OrquestacionEjecucionResponse> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(service.obtenerPorId(id));
+    @PostMapping("/search/id")
+    public ResponseEntity<OrquestacionEjecucionResponse> getById(@RequestBody GetOrchestrationByIdRequest request) {
+        return ResponseEntity.ok(service.obtenerPorId(request.executionId()));
     }
 
-    @GetMapping("/caso/{casoGestionId}")
-    public ResponseEntity<List<OrquestacionEjecucionResponse>> listarPorCaso(@PathVariable Long casoGestionId) {
-        return ResponseEntity.ok(service.listarPorCasoGestion(casoGestionId));
+    @PostMapping("/search/case")
+    public ResponseEntity<List<OrquestacionEjecucionResponse>> listByCase(@RequestBody ListOrchestrationByCaseRequest request) {
+        return ResponseEntity.ok(service.listarPorCasoGestion(request.caseId()));
     }
 }
 
