@@ -91,7 +91,7 @@ http://localhost:8080/swagger-ui/index.html
 
 ### Estructura de carpetas
 ```
-src/main/java/cooviteCobranza/
+src/main/java/coovitelCobranza/
 ├── security/
 │   ├── auth/          ✅ Autenticación (existente)
 │   ├── config/        ✅ SecurityConfig + OpenApiConfig (NUEVO)

@@ -62,7 +62,7 @@
 
 ```
 src/main/
-├── java/cooviteCobranza/
+├── java/coovitelCobranza/
 │   ├── security/
 │   │   ├── auth/ (ya existía)
 │   │   ├── config/

@@ -24,7 +24,7 @@
 Prueban la lógica de negocio pura sin base de datos:
 
 ```
-src/test/java/cooviteCobranza/cobranzas/
+src/test/java/coovitelCobranza/cobranzas/
 ├── cliente/
 │   └── domain/model/
 │       └── ClienteTest.java (10 tests)
@@ -43,7 +43,7 @@ src/test/java/cooviteCobranza/cobranzas/
 Prueban la orquestación con BD y repositorios:
 
 ```
-src/test/java/cooviteCobranza/cobranzas/
+src/test/java/coovitelCobranza/cobranzas/
 ├── cliente/
 │   └── application/service/
 │       └── ClienteApplicationServiceIntegrationTest.java (8 tests)

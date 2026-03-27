@@ -1,0 +1,22 @@
+package coovitelCobranza.cobranzas.shared.infrastructure.event;
+
+import coovitelCobranza.cobranzas.shared.domain.event.DomainEvent;
+import coovitelCobranza.cobranzas.shared.domain.event.DomainEventPublisher;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
+
+@Component
+public class SpringDomainEventPublisher implements DomainEventPublisher {
+
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    public SpringDomainEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
+
+    @Override
+    public void publish(DomainEvent event) {
+        applicationEventPublisher.publishEvent(event);
+    }
+}
+

@@ -8,10 +8,10 @@ Cambia `MiDominio` por tu nombre (ej: `Cliente`, `Pago`, `Caso`).
 
 ## 1️⃣ Domain Model
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/domain/model/MiDominio.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/domain/model/MiDominio.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.domain.model;
+package coovitelCobranza.cobranzas.midominio.domain.model;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -70,12 +70,12 @@ public class MiDominio {
 
 ## 2️⃣ Domain Repository (Interface)
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/domain/repository/MiDominioRepository.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/domain/repository/MiDominioRepository.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.domain.repository;
+package coovitelCobranza.cobranzas.midominio.domain.repository;
 
-import cooviteCobranza.cobranzas.midominio.domain.model.MiDominio;
+import coovitelCobranza.cobranzas.midominio.domain.model.MiDominio;
 
 import java.util.List;
 import java.util.Optional;
@@ -94,10 +94,10 @@ public interface MiDominioRepository {
 
 ## 3️⃣ Domain Exceptions
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/domain/exception/MiDominioNotFoundException.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/domain/exception/MiDominioNotFoundException.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.domain.exception;
+package coovitelCobranza.cobranzas.midominio.domain.exception;
 
 public class MiDominioNotFoundException extends RuntimeException {
     public MiDominioNotFoundException(Long id) {
@@ -106,10 +106,10 @@ public class MiDominioNotFoundException extends RuntimeException {
 }
 ```
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/domain/exception/MiDominioBusinessException.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/domain/exception/MiDominioBusinessException.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.domain.exception;
+package coovitelCobranza.cobranzas.midominio.domain.exception;
 
 public class MiDominioBusinessException extends RuntimeException {
     public MiDominioBusinessException(String message) {
@@ -122,12 +122,12 @@ public class MiDominioBusinessException extends RuntimeException {
 
 ## 4️⃣ DTOs
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/application/dto/MiDominioResponse.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/application/dto/MiDominioResponse.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.application.dto;
+package coovitelCobranza.cobranzas.midominio.application.dto;
 
-import cooviteCobranza.cobranzas.midominio.domain.model.MiDominio;
+import coovitelCobranza.cobranzas.midominio.domain.model.MiDominio;
 
 import java.time.LocalDateTime;
 
@@ -150,10 +150,10 @@ public record MiDominioResponse(
 }
 ```
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/application/dto/CrearMiDominioRequest.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/application/dto/CrearMiDominioRequest.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.application.dto;
+package coovitelCobranza.cobranzas.midominio.application.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -171,17 +171,17 @@ public record CrearMiDominioRequest(
 
 ## 5️⃣ Application Service
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/application/service/MiDominioApplicationService.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/application/service/MiDominioApplicationService.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.application.service;
+package coovitelCobranza.cobranzas.midominio.application.service;
 
-import cooviteCobranza.cobranzas.midominio.application.dto.CrearMiDominioRequest;
-import cooviteCobranza.cobranzas.midominio.application.dto.MiDominioResponse;
-import cooviteCobranza.cobranzas.midominio.domain.exception.MiDominioBusinessException;
-import cooviteCobranza.cobranzas.midominio.domain.exception.MiDominioNotFoundException;
-import cooviteCobranza.cobranzas.midominio.domain.model.MiDominio;
-import cooviteCobranza.cobranzas.midominio.domain.repository.MiDominioRepository;
+import coovitelCobranza.cobranzas.midominio.application.dto.CrearMiDominioRequest;
+import coovitelCobranza.cobranzas.midominio.application.dto.MiDominioResponse;
+import coovitelCobranza.cobranzas.midominio.domain.exception.MiDominioBusinessException;
+import coovitelCobranza.cobranzas.midominio.domain.exception.MiDominioNotFoundException;
+import coovitelCobranza.cobranzas.midominio.domain.model.MiDominio;
+import coovitelCobranza.cobranzas.midominio.domain.repository.MiDominioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -238,12 +238,12 @@ public class MiDominioApplicationService {
 
 ## 6️⃣ JPA Entity
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/infrastructure/persistence/MiDominioJpaEntity.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/infrastructure/persistence/MiDominioJpaEntity.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.infrastructure.persistence;
+package coovitelCobranza.cobranzas.midominio.infrastructure.persistence;
 
-import cooviteCobranza.cobranzas.midominio.domain.model.MiDominio;
+import coovitelCobranza.cobranzas.midominio.domain.model.MiDominio;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -311,10 +311,10 @@ public class MiDominioJpaEntity {
 
 ## 7️⃣ JPA Repository (Spring Data)
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/infrastructure/persistence/MiDominioJpaRepository.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/infrastructure/persistence/MiDominioJpaRepository.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.infrastructure.persistence;
+package coovitelCobranza.cobranzas.midominio.infrastructure.persistence;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -329,13 +329,13 @@ public interface MiDominioJpaRepository extends JpaRepository<MiDominioJpaEntity
 
 ## 8️⃣ Repository Adapter
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/infrastructure/persistence/MiDominioRepositoryImpl.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/infrastructure/persistence/MiDominioRepositoryImpl.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.infrastructure.persistence;
+package coovitelCobranza.cobranzas.midominio.infrastructure.persistence;
 
-import cooviteCobranza.cobranzas.midominio.domain.model.MiDominio;
-import cooviteCobranza.cobranzas.midominio.domain.repository.MiDominioRepository;
+import coovitelCobranza.cobranzas.midominio.domain.model.MiDominio;
+import coovitelCobranza.cobranzas.midominio.domain.repository.MiDominioRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -375,14 +375,14 @@ public class MiDominioRepositoryImpl implements MiDominioRepository {
 
 ## 9️⃣ Controller REST
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/infrastructure/web/MiDominioController.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/infrastructure/web/MiDominioController.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.infrastructure.web;
+package coovitelCobranza.cobranzas.midominio.infrastructure.web;
 
-import cooviteCobranza.cobranzas.midominio.application.dto.CrearMiDominioRequest;
-import cooviteCobranza.cobranzas.midominio.application.dto.MiDominioResponse;
-import cooviteCobranza.cobranzas.midominio.application.service.MiDominioApplicationService;
+import coovitelCobranza.cobranzas.midominio.application.dto.CrearMiDominioRequest;
+import coovitelCobranza.cobranzas.midominio.application.dto.MiDominioResponse;
+import coovitelCobranza.cobranzas.midominio.application.service.MiDominioApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -434,13 +434,13 @@ public class MiDominioController {
 
 ## 🔟 Exception Handler
 
-**Archivo:** `src/main/java/cooviteCobranza/cobranzas/midominio/infrastructure/web/MiDominioExceptionHandler.java`
+**Archivo:** `src/main/java/coovitelCobranza/cobranzas/midominio/infrastructure/web/MiDominioExceptionHandler.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.infrastructure.web;
+package coovitelCobranza.cobranzas.midominio.infrastructure.web;
 
-import cooviteCobranza.cobranzas.midominio.domain.exception.MiDominioBusinessException;
-import cooviteCobranza.cobranzas.midominio.domain.exception.MiDominioNotFoundException;
+import coovitelCobranza.cobranzas.midominio.domain.exception.MiDominioBusinessException;
+import coovitelCobranza.cobranzas.midominio.domain.exception.MiDominioNotFoundException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -451,7 +451,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.Instant;
 import java.util.Map;
 
-@RestControllerAdvice(basePackages = "cooviteCobranza.cobranzas")
+@RestControllerAdvice(basePackages = "coovitelCobranza.cobranzas")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class MiDominioExceptionHandler {
 
@@ -480,10 +480,10 @@ public class MiDominioExceptionHandler {
 
 ## 1️⃣1️⃣ Unit Test
 
-**Archivo:** `src/test/java/cooviteCobranza/cobranzas/midominio/domain/model/MiDominioTest.java`
+**Archivo:** `src/test/java/coovitelCobranza/cobranzas/midominio/domain/model/MiDominioTest.java`
 
 ```java
-package cooviteCobranza.cobranzas.midominio.domain.model;
+package coovitelCobranza.cobranzas.midominio.domain.model;
 
 import org.junit.jupiter.api.Test;
 

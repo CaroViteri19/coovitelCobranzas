@@ -76,7 +76,7 @@ Un **caso de uso completo** (end-to-end) del dominio `Obligacion` siguiendo **ar
 ## Estructura de carpetas creadas
 
 ```
-src/main/java/cooviteCobranza/cobranzas/obligacion/
+src/main/java/coovitelCobranza/cobranzas/obligacion/
 ├── domain/
 │   ├── model/
 │   │   └── Obligacion.java              ← Agregado raíz (pura lógica de negocio)
@@ -267,7 +267,7 @@ Obligacion.fechaVencimiento ← obligation.due_date
 
 ## Tests unitarios
 
-Archivo: `src/test/java/cooviteCobranza/cobranzas/obligacion/domain/model/ObligacionTest.java`
+Archivo: `src/test/java/coovitelCobranza/cobranzas/obligacion/domain/model/ObligacionTest.java`
 
 Pruebas sin BD (solo lógica de dominio):
 

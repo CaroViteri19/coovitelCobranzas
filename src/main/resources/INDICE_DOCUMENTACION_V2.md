@@ -172,7 +172,7 @@ LISTO PARA: Crear test cases, validar endpoints
 
 ### 📍 Cliente
 ```
-Ubicación: src/main/java/cooviteCobranza/cobranzas/cliente/
+Ubicación: src/main/java/coovitelCobranza/cobranzas/cliente/
 Documentación: TESTING_GUIDE.md (sección 1)
 Endpoints: 5
 Status: ✅ Completo
@@ -180,7 +180,7 @@ Status: ✅ Completo
 
 ### 💳 Pago
 ```
-Ubicación: src/main/java/cooviteCobranza/cobranzas/pago/
+Ubicación: src/main/java/coovitelCobranza/cobranzas/pago/
 Documentación: TESTING_GUIDE.md (sección 2)
 Endpoints: 6
 Status: ✅ Completo
@@ -188,7 +188,7 @@ Status: ✅ Completo
 
 ### 📞 Interacción
 ```
-Ubicación: src/main/java/cooviteCobranza/cobranzas/interaccion/
+Ubicación: src/main/java/coovitelCobranza/cobranzas/interaccion/
 Documentación: TESTING_GUIDE.md (sección 3)
 Endpoints: 4
 Status: ✅ Completo
@@ -196,7 +196,7 @@ Status: ✅ Completo
 
 ### 📋 CasoGestion
 ```
-Ubicación: src/main/java/cooviteCobranza/cobranzas/casogestion/
+Ubicación: src/main/java/coovitelCobranza/cobranzas/casogestion/
 Documentación: TESTING_GUIDE.md (sección 4)
 Endpoints: 6
 Status: ✅ Completo

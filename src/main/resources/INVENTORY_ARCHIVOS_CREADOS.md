@@ -307,7 +307,7 @@ curl -X POST http://localhost:8080/api/casos-gestion ...
 
 ```
 coovitelCobranzas/
-├── src/main/java/cooviteCobranza/cobranzas/
+├── src/main/java/coovitelCobranza/cobranzas/
 │   ├── cliente/              ← 15 archivos NUEVO
 │   │   ├── domain/
 │   │   ├── application/
