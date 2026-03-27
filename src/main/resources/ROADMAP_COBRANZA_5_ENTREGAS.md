@@ -1,4 +1,4 @@
-# Roadmap completo de la app de recuperacion de cartera (5 entregas)
+# Plataforma de Recuperación de Cartera - ROADMAP COMPLETO
 
 > Documento de trabajo tecnico/funcional para ejecutar el proyecto por pasos, aprender el dominio de cobranza y reducir riesgo de implementacion.
 > 

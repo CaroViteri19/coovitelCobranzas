@@ -5,9 +5,7 @@ import cooviteCobranza.security.auth.domain.model.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -71,9 +69,6 @@ public class UserJpaEntity {
     )
     private Set<RoleJpaEntity> roles = new HashSet<>();
     
-    /**
-     * Convertir de UserJpaEntity (Persistencia) a User (Dominio)
-     */
     public User toDomain() {
         Set<Role> domainRoles = this.roles.stream()
                 .map(RoleJpaEntity::toDomain)
@@ -93,14 +88,7 @@ public class UserJpaEntity {
         );
     }
     
-    /**
-     * Convertir de User (Dominio) a UserJpaEntity (Persistencia)
-     */
     public static UserJpaEntity fromDomain(User domainUser) {
-        Set<RoleJpaEntity> jpaRoles = domainUser.getRoles().stream()
-                .map(RoleJpaEntity::fromDomain)
-                .collect(Collectors.toSet());
-        
         UserJpaEntity entity = new UserJpaEntity();
         entity.setIdUser(domainUser.getIdUser());
         entity.setName(domainUser.getName());
@@ -111,14 +99,15 @@ public class UserJpaEntity {
         entity.setCreatedAt(domainUser.getCreatedAt());
         entity.setUpdatedAt(domainUser.getUpdatedAt());
         entity.setLastLogin(domainUser.getLastLogin());
+        
+        Set<RoleJpaEntity> jpaRoles = domainUser.getRoles().stream()
+                .map(RoleJpaEntity::fromDomain)
+                .collect(Collectors.toSet());
         entity.setRoles(jpaRoles);
         
         return entity;
     }
     
-    /**
-     * Actualizar esta entidad con los cambios del dominio
-     */
     public void updateFromDomain(User domainUser) {
         this.name = domainUser.getName();
         this.lastname = domainUser.getLastname();
