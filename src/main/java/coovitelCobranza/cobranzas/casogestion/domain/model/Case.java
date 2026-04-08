@@ -4,41 +4,17 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * 📋 MODELO DE CASO DE GESTIÓN (VERSIÓN EN INGLÉS)
- * 
- * Esta clase representa un CASO en el sistema de cobranzas.
+ * Modelo de dominio que representa un caso de cobranza.
+ *
  * Un caso es la gestión de una obligación específica hacia un cliente.
- * 
- * RESPONSABILIDADES:
+ * Proporciona la lógica de negocio para asignar asesores, programar
+ * acciones futuras y controlar el ciclo de vida del caso.
+ *
+ * Responsabilidades:
  * - Almacenar información del caso (ID, obligación, prioridad, estado)
- * - Permitir asignar un asesor al caso
- * - Permitir programar actiones futuras
- * - Permitir close el caso cuando se resuelve
- * 
- * EJEMPLO DE USO:
- *   // Create un nuevo caso de cobranza
- *   Case miCaso = Case.create(obligationId, Priority.HIGH);
- *   
- *   // Assign un asesor
- *   miCaso.assignAdvisor("Juan Pérez");
- *   
- *   // Schedule siguiente acción
- *   miCaso.scheduleNextAction(LocalDateTime.now().plusDays(7));
- *   
- *   // Cerrar el caso cuando se paga
- *   miCaso.close();
- * 
- * ENUM Priority (Priority):
- *   - LOW: Baja prioridad (deuda pequeña)
- *   - MEDIUM: Media prioridad (deuda normal)
- *   - HIGH: Alta prioridad (deuda grande)
- *   - CRITICAL: Crítica (deuda muy grande o atrasada)
- * 
- * ENUM Status (Status):
- *   - OPEN: Caso abierto, sin asignar
- *   - IN_MANAGEMENT: En gestión con un asesor
- *   - PAUSED: Pausado (en espera de respuesta)
- *   - CLOSED: Cerrado (caso resuelto)
+ * - Validar y asignar un asesor al caso
+ * - Programar la próxima acción sobre el caso
+ * - Cerrar el caso cuando se resuelve
  */
 public class Case {
 
@@ -119,84 +95,156 @@ public class Case {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Alias en español para assignAdvisor().
+     *
+     * @param advisor el nombre o ID del asesor
+     */
     public void asignarAdvisor(String advisor) {
         assignAdvisor(advisor);
     }
 
     /**
-     * Schedule the next action for this case.
+     * Programa la próxima acción para este caso.
      *
-     * @param dateTime the datetime of the next action
-     * @throws IllegalArgumentException if dateTime is null
+     * @param dateTime la fecha y hora de la próxima acción
+     * @throws IllegalArgumentException si dateTime es null
      */
     public void scheduleNextAction(LocalDateTime dateTime) {
         this.nextActionAt = Objects.requireNonNull(dateTime, "dateTime is required");
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Alias en español para scheduleNextAction().
+     *
+     * @param dateTime la fecha y hora de la próxima acción
+     */
     public void programarSiguienteAction(LocalDateTime dateTime) {
         scheduleNextAction(dateTime);
     }
 
     /**
-     * Close this case.
+     * Cierra este caso marcándolo como resuelto.
      */
     public void close() {
         this.status = Status.CLOSED;
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Alias en español para close().
+     */
     public void cerrar() {
         close();
     }
 
-    // Getters
+    /**
+     * Retorna el identificador único del caso.
+     *
+     * @return el ID del caso
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Retorna el ID de la obligación asociada a este caso.
+     *
+     * @return el ID de la obligación
+     */
     public Long getObligationId() {
         return obligationId;
     }
 
+    /**
+     * Retorna el nivel de prioridad del caso.
+     *
+     * @return la prioridad (LOW, MEDIUM, HIGH, CRITICAL)
+     */
     public Priority getPriority() {
         return priority;
     }
 
+    /**
+     * Alias en español para getPriority().
+     *
+     * @return la prioridad
+     */
     public Priority getPrioridad() {
         return getPriority();
     }
 
+    /**
+     * Retorna el estado actual del caso.
+     *
+     * @return el estado (OPEN, IN_MANAGEMENT, PAUSED, CLOSED)
+     */
     public Status getStatus() {
         return status;
     }
 
+    /**
+     * Alias en español para getStatus().
+     *
+     * @return el estado
+     */
     public Status getEstado() {
         return getStatus();
     }
 
+    /**
+     * Retorna el nombre del asesor asignado al caso.
+     *
+     * @return el nombre del asesor, o null si no está asignado
+     */
     public String getAssignedAdvisor() {
         return assignedAdvisor;
     }
 
+    /**
+     * Alias en español para getAssignedAdvisor().
+     *
+     * @return el nombre del asesor
+     */
     public String getAdvisorAsignado() {
         return getAssignedAdvisor();
     }
 
+    /**
+     * Retorna la fecha y hora de la próxima acción programada.
+     *
+     * @return la próxima acción, o null si no está programada
+     */
     public LocalDateTime getNextActionAt() {
         return nextActionAt;
     }
 
+    /**
+     * Alias en español para getNextActionAt().
+     *
+     * @return la próxima acción
+     */
     public LocalDateTime getProximaActionAt() {
         return getNextActionAt();
     }
 
+    /**
+     * Retorna la fecha y hora de la última actualización del caso.
+     *
+     * @return la última actualización
+     */
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
     /**
-     * Priority levels for case management.
+     * Enumeración de niveles de prioridad para la gestión de casos.
+     *
+     * LOW: Prioridad baja (deuda pequeña)
+     * MEDIUM: Prioridad media (deuda normal)
+     * HIGH: Prioridad alta (deuda grande)
+     * CRITICAL: Prioridad crítica (deuda muy grande o severamente atrasada)
      */
     public enum Priority {
         LOW,
@@ -206,7 +254,12 @@ public class Case {
     }
 
     /**
-     * Case statuses throughout its lifecycle.
+     * Enumeración de estados posibles a lo largo del ciclo de vida de un caso.
+     *
+     * OPEN: Caso abierto, sin asignar a ningún asesor
+     * IN_MANAGEMENT: Caso en gestión con un asesor asignado
+     * PAUSED: Caso pausado, en espera de respuesta o evento
+     * CLOSED: Caso cerrado y resuelto
      */
     public enum Status {
         OPEN,

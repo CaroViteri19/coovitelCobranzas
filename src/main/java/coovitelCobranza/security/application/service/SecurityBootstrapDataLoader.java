@@ -12,6 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 
+/**
+ * Cargador de datos de inicialización para seguridad.
+ * Crea el rol de administrador y el usuario administrador por defecto al iniciar la aplicación.
+ */
 @Component
 public class SecurityBootstrapDataLoader implements CommandLineRunner {
 
@@ -21,6 +25,13 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
 
     private static final String ADMIN_PASSWORD_HASH = "$2b$12$fqSw.mgazZMAs12M0ncI1u3ojo8vFT01QKLWWHg/a9Adf/Al5tnou";
 
+    /**
+     * Constructor con inyección de dependencias.
+     *
+     * @param bootstrapProperties Propiedades de configuración del bootstrap.
+     * @param roleRepository Repositorio de roles.
+     * @param userRepository Repositorio de usuarios.
+     */
     public SecurityBootstrapDataLoader(SecurityBootstrapProperties bootstrapProperties,
                                       RoleJpaRepository roleRepository,
                                       UserJpaRepository userRepository) {
@@ -29,6 +40,12 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Ejecuta la carga de datos inicial si está habilitada.
+     * Crea el rol ADMIN y el usuario administrador si no existen.
+     *
+     * @param args Argumentos de línea de comandos (no utilizados).
+     */
     @Override
     @Transactional
     public void run(String... args) {
@@ -66,6 +83,12 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
         userRepository.save(adminUser);
     }
 
+    /**
+     * Divide el nombre completo en primer nombre y apellidos.
+     *
+     * @param fullName Nombre completo a dividir.
+     * @return Array con [primer nombre, apellidos].
+     */
     private String[] splitFullName(String fullName) {
         String trimmed = fullName == null ? "" : fullName.trim();
         if (trimmed.isEmpty()) {

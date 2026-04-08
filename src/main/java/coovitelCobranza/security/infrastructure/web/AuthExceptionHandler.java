@@ -11,9 +11,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Manejador de excepciones global para el módulo de seguridad.
+ * Transforma excepciones personalizadas en respuestas HTTP apropiadas.
+ */
 @RestControllerAdvice(basePackages = "coovitelCobranza.security")
 public class AuthExceptionHandler {
 
+    /**
+     * Maneja excepciones de credenciales inválidas.
+     *
+     * @param ex Excepción de credenciales inválidas.
+     * @return Respuesta con estado 401 (Unauthorized).
+     */
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -23,6 +33,12 @@ public class AuthExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    /**
+     * Maneja excepciones cuando un usuario ya existe.
+     *
+     * @param ex Excepción de usuario ya existente.
+     * @return Respuesta con estado 409 (Conflict).
+     */
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, Object>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -32,6 +48,12 @@ public class AuthExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
+    /**
+     * Maneja excepciones de validación de argumentos.
+     *
+     * @param ex Excepción de validación no exitosa.
+     * @return Respuesta con estado 400 (Bad Request).
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, Object> body = new LinkedHashMap<>();

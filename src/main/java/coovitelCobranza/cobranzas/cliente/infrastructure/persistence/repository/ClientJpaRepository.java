@@ -7,9 +7,20 @@ import coovitelCobranza.cobranzas.cliente.infrastructure.persistence.entity.Clie
 
 import java.util.Optional;
 
+/**
+ * Repositorio JPA para operaciones de persistencia de entidades de clientes.
+ * Extiende JpaRepository para operaciones CRUD estándar.
+ */
 @Repository
 public interface ClientJpaRepository extends JpaRepository<ClientJpaEntity, Long> {
 
+    /**
+     * Busca un cliente por tipo y número de documento.
+     *
+     * @param tipoDocumento tipo de documento de identidad
+     * @param numeroDocumento número de documento de identidad
+     * @return Optional con la entidad de cliente si existe
+     */
     Optional<ClientJpaEntity> findByTipoDocumentoAndNumeroDocumento(String tipoDocumento, String numeroDocumento);
 }
 

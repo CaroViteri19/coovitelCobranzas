@@ -14,47 +14,42 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * 🎯 SERVICIO DE APLICACIÓN: GESTIÓN DE CASOS (VERSIÓN EN INGLÉS)
- * 
- * Este servicio coordina toda la lógica de negocio para casos de cobranza.
- * Actúa como intermediario entre:
- *   - Los CONTROLLERS (que reciben solicitudes HTTP)
- *   - El DOMINIO (donde está la lógica pura de negocio)
- *   - El REPOSITORIO (que guarda en base de datos)
- * 
- * RESPONSABILIDADES PRINCIPALES:
- * 1. createCase() → Create un nuevo caso de cobranza
- * 2. getById() → Obtener un caso por su ID
- * 3. listPending() → Listar todos los casos sin asignar
- * 4. assignAdvisor() → Assign un asesor a un caso
- * 5. scheduleAction() → Schedule siguiente acción en un caso
- * 6. closeCase() → Cerrar un caso (cuando se resuelve)
- * 
- * EJEMPLO DE USO DESDE UN CONTROLLER:
- *   @PostMapping
- *   public ResponseEntity<CaseResponse> create(@RequestBody CreateCaseRequest request) {
- *       // El controller llama al servicio
- *       CaseResponse response = caseApplicationService.createCase(request);
- *       return ResponseEntity.status(HttpStatus.CREATED).body(response);
- *   }
- * 
- * TRANSACCIONES:
- * - @Transactional: Asegura que la operación sea atómica (todo o nada)
- * - @Transactional(readOnly = true): Para operaciones de solo lectura
- * 
- * VALIDACIONES AUTOMÁTICAS:
- * - Si el caso no existe → Lanza CaseNotFoundException
- * - Si los datos son inválidos → Lanza CaseBusinessException
+ * Servicio de aplicación que coordina la lógica de negocio para la gestión
+ * de casos de cobranza.
+ *
+ * Actúa como intermediario entre los controladores REST, el dominio de negocio
+ * y la capa de persistencia. Proporciona operaciones transaccionales para crear,
+ * consultar, asignar asesores, programar acciones y cerrar casos.
+ *
+ * Responsabilidades:
+ * - createCase(): Crear un nuevo caso de cobranza
+ * - getById(): Obtener un caso por su ID
+ * - listPending(): Listar todos los casos pendientes
+ * - assignAdvisor(): Asignar un asesor a un caso
+ * - scheduleAction(): Programar la próxima acción en un caso
+ * - closeCase(): Cerrar un caso resuelto
  */
 @Service
 public class CaseApplicationService {
 
     private final CaseRepository caseRepository;
 
+    /**
+     * Construye una instancia del servicio de aplicación.
+     *
+     * @param caseRepository el repositorio para acceder a los casos
+     */
     public CaseApplicationService(CaseRepository caseRepository) {
         this.caseRepository = caseRepository;
     }
 
+    /**
+     * Crea un nuevo caso de cobranza.
+     *
+     * @param request DTO con la información del caso a crear (obligationId y priority)
+     * @return DTO con la información del caso creado
+     * @throws CaseBusinessException si la prioridad es inválida o hay un error en la creación
+     */
     @Transactional
     public CaseResponse createCase(CreateCaseRequest request) {
         try {
@@ -69,6 +64,13 @@ public class CaseApplicationService {
         }
     }
 
+    /**
+     * Obtiene un caso por su identificador único.
+     *
+     * @param id el ID del caso a recuperar
+     * @return DTO con la información del caso
+     * @throws CaseNotFoundException si el caso no existe
+     */
     @Transactional(readOnly = true)
     public CaseResponse getById(Long id) {
         Case caseEntity = caseRepository.findById(id)
@@ -76,6 +78,11 @@ public class CaseApplicationService {
         return CaseResponse.fromDomain(caseEntity);
     }
 
+    /**
+     * Lista todos los casos pendientes de gestión.
+     *
+     * @return lista de DTOs con los casos pendientes
+     */
     @Transactional(readOnly = true)
     public List<CaseResponse> listPending() {
         return caseRepository.findPendientes().stream()
@@ -83,6 +90,15 @@ public class CaseApplicationService {
                 .toList();
     }
 
+    /**
+     * Asigna un asesor a un caso existente.
+     *
+     * @param id el ID del caso a actualizar
+     * @param request DTO con el nombre del asesor
+     * @return DTO con la información actualizada del caso
+     * @throws CaseNotFoundException si el caso no existe
+     * @throws CaseBusinessException si el nombre del asesor es inválido
+     */
     @Transactional
     public CaseResponse assignAdvisor(Long id, AssignAdvisorRequest request) {
         Case caseEntity = caseRepository.findById(id)
@@ -96,6 +112,15 @@ public class CaseApplicationService {
         }
     }
 
+    /**
+     * Programa la próxima acción para un caso.
+     *
+     * @param id el ID del caso a actualizar
+     * @param request DTO con la fecha y hora de la próxima acción
+     * @return DTO con la información actualizada del caso
+     * @throws CaseNotFoundException si el caso no existe
+     * @throws CaseBusinessException si la fecha y hora son inválidas
+     */
     @Transactional
     public CaseResponse scheduleAction(Long id, ScheduleActionRequest request) {
         Case caseEntity = caseRepository.findById(id)
@@ -109,6 +134,13 @@ public class CaseApplicationService {
         }
     }
 
+    /**
+     * Cierra un caso de cobranza marcándolo como resuelto.
+     *
+     * @param id el ID del caso a cerrar
+     * @return DTO con la información del caso cerrado
+     * @throws CaseNotFoundException si el caso no existe
+     */
     @Transactional
     public CaseResponse closeCase(Long id) {
         Case caseEntity = caseRepository.findById(id)

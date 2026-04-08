@@ -11,9 +11,21 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manejador global de excepciones para operaciones de casos de cobranza.
+ *
+ * Captura excepciones específicas del dominio de casos y las convierte
+ * en respuestas HTTP con información de error adecuada.
+ */
 @RestControllerAdvice
 public class CaseExceptionHandler {
 
+    /**
+     * Maneja excepciones cuando un caso no es encontrado.
+     *
+     * @param ex la excepción de caso no encontrado
+     * @return ResponseEntity con status 404 y mensaje de error
+     */
     @ExceptionHandler(CaseNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleCaseNotFoundException(CaseNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
@@ -24,6 +36,12 @@ public class CaseExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    /**
+     * Maneja excepciones cuando se viola una regla de negocio.
+     *
+     * @param ex la excepción de negocio
+     * @return ResponseEntity con status 400 y mensaje de error
+     */
     @ExceptionHandler(CaseBusinessException.class)
     public ResponseEntity<Map<String, Object>> handleCaseBusinessException(CaseBusinessException ex) {
         Map<String, Object> body = new HashMap<>();
@@ -34,6 +52,12 @@ public class CaseExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    /**
+     * Maneja cualquier excepción no controlada que ocurra durante la operación.
+     *
+     * @param ex la excepción genérica
+     * @return ResponseEntity con status 500 y mensaje de error
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
         Map<String, Object> body = new HashMap<>();

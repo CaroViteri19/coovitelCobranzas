@@ -10,26 +10,54 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controlador REST para operaciones de autenticación y registro de usuarios.
+ * Expone los puntos finales para login, registro y asignación de roles.
+ */
+
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthApplicationService authApplicationService;
 
+    /**
+     * Constructor con inyección de dependencias.
+     *
+     * @param authApplicationService Servicio de autenticación.
+     */
     public AuthController(AuthApplicationService authApplicationService) {
         this.authApplicationService = authApplicationService;
     }
 
+    /**
+     * Autentica un usuario y retorna un token JWT.
+     *
+     * @param request Solicitud con credenciales de usuario.
+     * @return Respuesta con token JWT y datos del usuario.
+     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(authApplicationService.login(request));
     }
 
+    /**
+     * Registra un nuevo usuario en el sistema.
+     *
+     * @param request Solicitud con datos del usuario a registrar.
+     * @return Respuesta con los datos del usuario creado (código 201).
+     */
     @PostMapping("/register")
     public ResponseEntity<RegisterUserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authApplicationService.register(request));
     }
 
+    /**
+     * Asigna nuevos roles a un usuario existente.
+     *
+     * @param request Solicitud con el ID del usuario y los roles a asignar.
+     * @return Respuesta con mensaje de confirmación.
+     */
     @PostMapping("/role")
     public ResponseEntity<String> assignRole(@Valid @RequestBody UpdateRoleRequest request) {
         return ResponseEntity.ok(authApplicationService.assignRole(request));

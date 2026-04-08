@@ -14,15 +14,32 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio de detalles de usuario para Spring Security.
+ * Carga los datos del usuario y sus autoridades desde la base de datos.
+ */
 @Service
 public class SecurityUserDetailsService implements UserDetailsService {
 
     private final UserJpaRepository userRepository;
 
+    /**
+     * Constructor con inyección de dependencias.
+     *
+     * @param userRepository Repositorio de usuarios.
+     */
     public SecurityUserDetailsService(UserJpaRepository userRepository) {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Carga los detalles del usuario por nombre de usuario.
+     * Obtiene el usuario y sus roles para autenticación.
+     *
+     * @param username Nombre de usuario a buscar.
+     * @return Detalles del usuario para Spring Security.
+     * @throws UsernameNotFoundException Si el usuario no existe en el sistema.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserJpaEntity user = userRepository.findByUsername(username)

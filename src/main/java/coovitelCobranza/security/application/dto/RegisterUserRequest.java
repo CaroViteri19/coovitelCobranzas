@@ -4,6 +4,15 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Registro de solicitud para registrar un nuevo usuario en el sistema.
+ * Contiene todos los datos necesarios para crear una cuenta de usuario.
+ *
+ * @param username Nombre de usuario (entre 4 y 80 caracteres).
+ * @param password Contraseña del usuario (entre 8 y 120 caracteres).
+ * @param fullName Nombre completo del usuario (máximo 150 caracteres).
+ * @param email Correo electrónico del usuario (válido, máximo 120 caracteres).
+ */
 public record RegisterUserRequest(
         @NotBlank(message = "username is required")
         @Size(min = 4, max = 80, message = "username must be between 4 and 80 characters")
