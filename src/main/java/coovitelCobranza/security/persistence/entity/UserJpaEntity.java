@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -47,7 +48,7 @@ public class UserJpaEntity {
     @Column(nullable = false)
     private boolean enabled;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean DEFAULT false")
     private boolean locked;
 
     @Column(nullable = false)
@@ -62,9 +63,8 @@ public class UserJpaEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleJpaEntity> roles = new LinkedHashSet<>();
 
-    private Boolean failedAttemps;
-
-    private Boolean isLocked;
+    @Column(nullable = false, columnDefinition = "int DEFAULT 0")
+    private int failedAttemps;
 
     public UserJpaEntity() {
     }
@@ -72,7 +72,7 @@ public class UserJpaEntity {
     public UserJpaEntity(Long id, String username, String password, String fullName, String firstName,
                             String lastName, String email,
                             boolean enabled, boolean locked, LocalDateTime createdAt, LocalDateTime updatedAt,
-                            Set<RoleJpaEntity> roles,  Boolean failedAttemps, Boolean isLocked) {
+                            Set<RoleJpaEntity> roles,  int failedAttemps) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -88,7 +88,6 @@ public class UserJpaEntity {
             this.roles = new LinkedHashSet<>(roles);
         }
         this.failedAttemps = failedAttemps;
-        this.isLocked = isLocked;
     }
 
     public Long getId() {
@@ -185,6 +184,14 @@ public class UserJpaEntity {
 
     public void setRoles(Set<RoleJpaEntity> roles) {
         this.roles = roles == null ? new LinkedHashSet<>() : new LinkedHashSet<>(roles);
+    }
+
+    public int getFailedAttemps() {
+        return failedAttemps;
+    }
+
+    public void setFailedAttemps(int failedAttemps) {
+        this.failedAttemps = failedAttemps;
     }
 
     public void addRole(RoleJpaEntity role) {

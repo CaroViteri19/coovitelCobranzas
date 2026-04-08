@@ -109,29 +109,45 @@ public class AuthApplicationService {
     }
 
     public LoginResponse login(LoginRequest request) {
+        UserJpaEntity user = userRepository.findByUsername(request.username()).orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.username(), request.password()));
-            Instant issuedAt = Instant.now();
-            Instant expiresAt = issuedAt.plus(jwtProperties.getExpirationMinutes(), ChronoUnit.MINUTES);
-            List<String> roles = authentication.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .map(authority -> authority.startsWith("ROLE_") ? authority.substring(5) : authority)
-                    .toList();
+            if (!user.isLocked()) {
 
-            JwtClaimsSet claims = JwtClaimsSet.builder()
-                    .issuer(jwtProperties.getIssuer())
-                    .subject(authentication.getName())
-                    .issuedAt(issuedAt)
-                    .expiresAt(expiresAt)
-                    .claim("roles", roles)
-                    .build();
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+                Instant issuedAt = Instant.now();
+                Instant expiresAt = issuedAt.plus(jwtProperties.getExpirationMinutes(), ChronoUnit.MINUTES);
+                List<String> roles = authentication.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .map(authority -> authority.startsWith("ROLE_") ? authority.substring(5) : authority)
+                        .toList();
 
-            // Force HS256 to match the symmetric HMAC key configured in SecurityConfig.
-            JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).type("JWT").build();
-            String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
-            return new LoginResponse(token, "Bearer", authentication.getName(), roles, expiresAt);
+                JwtClaimsSet claims = JwtClaimsSet.builder()
+                        .issuer(jwtProperties.getIssuer())
+                        .subject(authentication.getName())
+                        .issuedAt(issuedAt)
+                        .expiresAt(expiresAt)
+                        .claim("roles", roles)
+                        .build();
+
+                // Force HS256 to match the symmetric HMAC key configured in SecurityConfig.
+                JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).type("JWT").build();
+                String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
+                user.setLocked(false);
+                return new LoginResponse(token, "Bearer", authentication.getName(), roles, expiresAt);
+            } else {
+                //Si el usuario esta bloqueado lanza una excepcion de credenciales invalidas sin intentar autenticar para evitar ataques de fuerza bruta
+                throw new InvalidCredentialsException("Account is locked");
+            }
         } catch (AuthenticationException ex) {
+            // Si las credenciales son incorrectas agrega intentos fallidos
+            int count = user.getFailedAttemps();
+            user.setFailedAttemps(count+1);
+            //Si los intentos fallidos son superiores a 3 intentos bloquea el usuario
+            if (user.getFailedAttemps()>=3){
+                user.setLocked(true);
+            }
+            userRepository.save(user);
             throw new InvalidCredentialsException("Invalid username or password");
         }
     }
