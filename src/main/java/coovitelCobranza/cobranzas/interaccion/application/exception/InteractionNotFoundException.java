@@ -1,4 +1,4 @@
-package coovitelCobranza.cobranzas.interaction.application.exception;
+package coovitelCobranza.cobranzas.interaccion.application.exception;
 
 public class InteractionNotFoundException extends RuntimeException {
 

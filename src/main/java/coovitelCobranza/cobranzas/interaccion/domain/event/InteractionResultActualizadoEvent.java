@@ -1,4 +1,4 @@
-package coovitelCobranza.cobranzas.interaction.domain.event;
+package coovitelCobranza.cobranzas.interaccion.domain.event;
 
 import coovitelCobranza.cobranzas.shared.domain.event.DomainEvent;
 

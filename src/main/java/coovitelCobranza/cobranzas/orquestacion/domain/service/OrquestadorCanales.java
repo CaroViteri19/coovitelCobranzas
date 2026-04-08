@@ -1,6 +1,6 @@
 package coovitelCobranza.cobranzas.orquestacion.domain.service;
 
-import coovitelCobranza.cobranzas.interaction.domain.model.Interaction;
+import coovitelCobranza.cobranzas.interaccion.domain.model.Interaction;
 
 public interface OrquestadorCanales {
 

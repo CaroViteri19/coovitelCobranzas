@@ -1,6 +1,6 @@
-package coovitelCobranza.cobranzas.interaction.domain.repository;
+package coovitelCobranza.cobranzas.interaccion.domain.repository;
 
-import coovitelCobranza.cobranzas.interaction.domain.model.Interaction;
+import coovitelCobranza.cobranzas.interaccion.domain.model.Interaction;
 
 import java.util.List;
 import java.util.Optional;

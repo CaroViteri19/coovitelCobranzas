@@ -1,4 +1,4 @@
-package coovitelCobranza.cobranzas.interaction.infrastructure.persistence;
+package coovitelCobranza.cobranzas.interaccion.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 

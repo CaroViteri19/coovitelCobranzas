@@ -1,13 +1,13 @@
-package coovitelCobranza.cobranzas.interaction.application.service;
+package coovitelCobranza.cobranzas.interaccion.application.service;
 
-import coovitelCobranza.cobranzas.interaction.application.dto.CreateInteractionRequest;
-import coovitelCobranza.cobranzas.interaction.application.dto.InteractionResponse;
-import coovitelCobranza.cobranzas.interaction.application.dto.UpdateInteractionResultRequest;
-import coovitelCobranza.cobranzas.interaction.application.exception.InteractionBusinessException;
-import coovitelCobranza.cobranzas.interaction.application.exception.InteractionNotFoundException;
-import coovitelCobranza.cobranzas.interaction.domain.event.InteractionResultActualizadoEvent;
-import coovitelCobranza.cobranzas.interaction.domain.model.Interaction;
-import coovitelCobranza.cobranzas.interaction.domain.repository.InteractionRepository;
+import coovitelCobranza.cobranzas.interaccion.application.dto.CreateInteractionRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.InteractionResponse;
+import coovitelCobranza.cobranzas.interaccion.application.dto.UpdateInteractionResultRequest;
+import coovitelCobranza.cobranzas.interaccion.application.exception.InteractionBusinessException;
+import coovitelCobranza.cobranzas.interaccion.application.exception.InteractionNotFoundException;
+import coovitelCobranza.cobranzas.interaccion.domain.event.InteractionResultActualizadoEvent;
+import coovitelCobranza.cobranzas.interaccion.domain.model.Interaction;
+import coovitelCobranza.cobranzas.interaccion.domain.repository.InteractionRepository;
 import coovitelCobranza.cobranzas.shared.domain.event.DomainEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

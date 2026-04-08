@@ -1,7 +1,7 @@
 package coovitelCobranza.cobranzas.auditoria.infrastructure.event;
 
 import coovitelCobranza.cobranzas.auditoria.domain.service.AuditService;
-import coovitelCobranza.cobranzas.interaction.domain.event.InteractionResultActualizadoEvent;
+import coovitelCobranza.cobranzas.interaccion.domain.event.InteractionResultActualizadoEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
