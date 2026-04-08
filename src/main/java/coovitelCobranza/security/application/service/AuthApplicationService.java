@@ -17,6 +17,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -121,8 +123,9 @@ public class AuthApplicationService {
                     .claim("roles", roles)
                     .build();
 
-            // Let the encoder pick the compatible key/algorithm from configured JWT material.
-            String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+            // Force HS256 to match the symmetric HMAC key configured in SecurityConfig.
+            JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).type("JWT").build();
+            String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
             return new LoginResponse(token, "Bearer", authentication.getName(), roles, expiresAt);
         } catch (AuthenticationException ex) {
             throw new InvalidCredentialsException("Invalid username or password");

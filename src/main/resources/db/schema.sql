@@ -204,15 +204,15 @@ CREATE TABLE `tracking` (
   CONSTRAINT `tracking_ibfk_1` FOREIGN KEY (`channel`) REFERENCES `catalog_channel` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Table: app_roles (security module)
-DROP TABLE IF EXISTS `app_roles`;
-CREATE TABLE `app_roles` (
+-- Table: roles (security module)
+DROP TABLE IF EXISTS `roles`;
+CREATE TABLE `roles` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `description` varchar(150) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_app_roles_name` (`name`)
+  UNIQUE KEY `uk_roles_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table: users (security module)
@@ -245,7 +245,7 @@ CREATE TABLE `users_roles` (
   PRIMARY KEY (`user_id`, `role_id`),
   KEY `idx_users_roles_role_id` (`role_id`),
   CONSTRAINT `fk_users_roles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`) ON DELETE CASCADE,
-  CONSTRAINT `fk_users_roles_role` FOREIGN KEY (`role_id`) REFERENCES `app_roles` (`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_users_roles_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ==========================================
@@ -287,9 +287,9 @@ CREATE TABLE `case_status_transitions` (
     REFERENCES `case_statuses` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Table: app_permissions (Granular permissions catalog)
-DROP TABLE IF EXISTS `app_permissions`;
-CREATE TABLE `app_permissions` (
+-- Table: permissions (Granular permissions catalog)
+DROP TABLE IF EXISTS `permissions`;
+CREATE TABLE `permissions` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `code` VARCHAR(80) NOT NULL UNIQUE,
   `name` VARCHAR(150) NOT NULL,
@@ -299,7 +299,7 @@ CREATE TABLE `app_permissions` (
   `action` VARCHAR(30),
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_app_permissions_code` (`code`),
+  UNIQUE KEY `uk_permissions_code` (`code`),
   INDEX `idx_module_resource_action` (`module`, `resource`, `action`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -312,9 +312,9 @@ CREATE TABLE `role_permissions` (
   PRIMARY KEY (`role_id`, `permission_id`),
   KEY `idx_role_permissions_permission_id` (`permission_id`),
   CONSTRAINT `fk_role_permissions_role` FOREIGN KEY (`role_id`)
-    REFERENCES `app_roles` (`id`) ON DELETE CASCADE,
+    REFERENCES `roles` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_role_permissions_permission` FOREIGN KEY (`permission_id`)
-    REFERENCES `app_permissions` (`id`) ON DELETE CASCADE
+    REFERENCES `permissions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table: escalation_rules (Automatic escalation rules for case overflow)

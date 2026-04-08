@@ -46,10 +46,10 @@ CREATE TABLE `case_status_transitions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
--- Table: app_permissions (Catálogo de Permisos)
+-- Table: permissions (Catálogo de Permisos)
 -- ==========================================
-DROP TABLE IF EXISTS `app_permissions`;
-CREATE TABLE `app_permissions` (
+DROP TABLE IF EXISTS `permissions`;
+CREATE TABLE `permissions` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `code` VARCHAR(80) NOT NULL UNIQUE,
   `name` VARCHAR(150) NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE `app_permissions` (
   `action` VARCHAR(30),
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_app_permissions_code` (`code`),
+  UNIQUE KEY `uk_permissions_code` (`code`),
   INDEX `idx_module_resource_action` (`module`, `resource`, `action`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -74,9 +74,9 @@ CREATE TABLE `role_permissions` (
   PRIMARY KEY (`role_id`, `permission_id`),
   KEY `idx_role_permissions_permission_id` (`permission_id`),
   CONSTRAINT `fk_role_permissions_role` FOREIGN KEY (`role_id`)
-    REFERENCES `app_roles` (`id`) ON DELETE CASCADE,
+    REFERENCES `roles` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_role_permissions_permission` FOREIGN KEY (`permission_id`)
-    REFERENCES `app_permissions` (`id`) ON DELETE CASCADE
+    REFERENCES `permissions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
@@ -143,9 +143,9 @@ VALUES
   (6, 7, 'CASE_CLOSED', 'Cobro judicial finalizado', TRUE);
 
 -- ==========================================
--- SEED DATA: App Permissions (según matriz de reunión)
+-- SEED DATA: Permissions (según matriz de reunión)
 -- ==========================================
-INSERT INTO `app_permissions` (`code`, `name`, `description`, `module`, `resource`, `action`)
+INSERT INTO `permissions` (`code`, `name`, `description`, `module`, `resource`, `action`)
 VALUES
   -- Dashboard
   ('DASHBOARD:VIEW', 'Ver Dashboard', 'Acceso al dashboard de KPIs', 'dashboard', 'dashboard', 'read'),
@@ -194,7 +194,7 @@ VALUES
 -- ==========================================
 -- SEED DATA: Role Permissions (según matriz de reunión)
 -- ==========================================
--- Asumiendo que app_roles contiene: ADMIN (1), SUPERVISOR (2), AGENTE (3), AUDITOR (4)
+-- Asumiendo que roles contiene: ADMIN (1), SUPERVISOR (2), AGENTE (3), AUDITOR (4)
 -- Esto será completado después de que los roles sean creados en bootstrap
 
 -- Para Admin: Todo acceso
