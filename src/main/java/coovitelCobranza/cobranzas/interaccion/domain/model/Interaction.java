@@ -1,4 +1,4 @@
-package coovitelCobranza.cobranzas.interaction.domain.model;
+package coovitelCobranza.cobranzas.interaccion.domain.model;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

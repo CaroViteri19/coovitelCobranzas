@@ -1,5 +1,6 @@
-package coovitelCobranza.cobranzas.interaction.infrastructure.persistence;
+package coovitelCobranza.cobranzas.interaccion.infrastructure.persistence.repository;
 
+import coovitelCobranza.cobranzas.interaccion.infrastructure.persistence.entity.InteractionJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

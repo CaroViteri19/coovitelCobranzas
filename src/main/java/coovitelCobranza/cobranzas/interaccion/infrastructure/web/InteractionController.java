@@ -1,14 +1,14 @@
-package coovitelCobranza.cobranzas.interaction.infrastructure.web;
+package coovitelCobranza.cobranzas.interaccion.infrastructure.web;
 
-import coovitelCobranza.cobranzas.interaction.application.dto.UpdateResultInteractionRequest;
-import coovitelCobranza.cobranzas.interaction.application.dto.CreateInteractionRequest;
-import coovitelCobranza.cobranzas.interaction.application.dto.GetInteractionByIdRequest;
-import coovitelCobranza.cobranzas.interaction.application.dto.InteractionResponse;
-import coovitelCobranza.cobranzas.interaction.application.dto.ListInteractionsByCaseRequest;
-import coovitelCobranza.cobranzas.interaction.application.dto.UpdateInteractionResultRequest;
-import coovitelCobranza.cobranzas.interaction.application.service.InteractionApplicationService;
-import coovitelCobranza.cobranzas.interaction.application.dto.CreateInteractionRequest;
-import coovitelCobranza.cobranzas.interaction.application.dto.InteractionResponse;
+import coovitelCobranza.cobranzas.interaccion.application.dto.UpdateResultInteractionRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.CreateInteractionRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.GetInteractionByIdRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.InteractionResponse;
+import coovitelCobranza.cobranzas.interaccion.application.dto.ListInteractionsByCaseRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.UpdateInteractionResultRequest;
+import coovitelCobranza.cobranzas.interaccion.application.service.InteractionApplicationService;
+import coovitelCobranza.cobranzas.interaccion.application.dto.CreateInteractionRequest;
+import coovitelCobranza.cobranzas.interaccion.application.dto.InteractionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

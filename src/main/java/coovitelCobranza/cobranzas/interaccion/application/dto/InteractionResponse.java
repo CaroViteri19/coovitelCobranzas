@@ -1,6 +1,6 @@
-package coovitelCobranza.cobranzas.interaction.application.dto;
+package coovitelCobranza.cobranzas.interaccion.application.dto;
 
-import coovitelCobranza.cobranzas.interaction.domain.model.Interaction;
+import coovitelCobranza.cobranzas.interaccion.domain.model.Interaction;
 
 import java.time.LocalDateTime;
 

@@ -1,6 +1,6 @@
 package coovitelCobranza.cobranzas.orquestacion.application.service;
 
-import coovitelCobranza.cobranzas.interaction.domain.model.Interaction;
+import coovitelCobranza.cobranzas.interaccion.domain.model.Interaction;
 import coovitelCobranza.cobranzas.orquestacion.application.dto.OrchestrationExecutionResponse;
 import coovitelCobranza.cobranzas.orquestacion.application.dto.SendOrchestrationRequest;
 import coovitelCobranza.cobranzas.orquestacion.application.exception.OrchestrationBusinessException;

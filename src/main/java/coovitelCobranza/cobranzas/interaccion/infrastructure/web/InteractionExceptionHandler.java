@@ -1,7 +1,7 @@
-package coovitelCobranza.cobranzas.interaction.infrastructure.web;
+package coovitelCobranza.cobranzas.interaccion.infrastructure.web;
 
-import coovitelCobranza.cobranzas.interaction.application.exception.InteractionBusinessException;
-import coovitelCobranza.cobranzas.interaction.application.exception.InteractionNotFoundException;
+import coovitelCobranza.cobranzas.interaccion.application.exception.InteractionBusinessException;
+import coovitelCobranza.cobranzas.interaccion.application.exception.InteractionNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
