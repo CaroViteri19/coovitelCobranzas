@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "app_roles")
+@Table(name = "roles")
 public class RoleJpaEntity {
 
     @Id

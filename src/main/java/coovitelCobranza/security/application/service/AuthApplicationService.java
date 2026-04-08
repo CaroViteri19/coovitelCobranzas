@@ -1,9 +1,6 @@
 package coovitelCobranza.security.application.service;
 
-import coovitelCobranza.security.application.dto.LoginRequest;
-import coovitelCobranza.security.application.dto.LoginResponse;
-import coovitelCobranza.security.application.dto.RegisterUserRequest;
-import coovitelCobranza.security.application.dto.RegisterUserResponse;
+import coovitelCobranza.security.application.dto.*;
 import coovitelCobranza.security.application.exception.InvalidCredentialsException;
 import coovitelCobranza.security.application.exception.UserAlreadyExistsException;
 import coovitelCobranza.security.config.JwtProperties;
@@ -17,6 +14,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -121,8 +120,9 @@ public class AuthApplicationService {
                     .claim("roles", roles)
                     .build();
 
-            // Let the encoder pick the compatible key/algorithm from configured JWT material.
-            String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+            // Force HS256 to match the symmetric HMAC key configured in SecurityConfig.
+            JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).type("JWT").build();
+            String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
             return new LoginResponse(token, "Bearer", authentication.getName(), roles, expiresAt);
         } catch (AuthenticationException ex) {
             throw new InvalidCredentialsException("Invalid username or password");
@@ -139,6 +139,16 @@ public class AuthApplicationService {
             return new String[]{parts[0], parts[0]};
         }
         return new String[]{parts[0], String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length))};
+    }
+
+    @Transactional
+    public String assignRole(UpdateRoleRequest  request) {
+        UserJpaEntity user = userRepository.findById(request.getIdUser()).orElseThrow(() -> new RuntimeException("User not found"));
+        List<RoleJpaEntity> roles = roleRepository.findAllById(request.getRole());
+        user.setRoles(new LinkedHashSet<>(roles));
+        // System.out.println("user: " + user + " roles: " + user.getRoles());
+        userRepository.save(user);
+        return "User" + user.getFullName() + " updated with roles "; //+ roles.stream().map(RoleJpaEntity::getName).toList();
     }
 }
 
