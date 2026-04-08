@@ -1,9 +1,6 @@
 package coovitelCobranza.security.infrastructure.web;
 
-import coovitelCobranza.security.application.dto.LoginRequest;
-import coovitelCobranza.security.application.dto.LoginResponse;
-import coovitelCobranza.security.application.dto.RegisterUserRequest;
-import coovitelCobranza.security.application.dto.RegisterUserResponse;
+import coovitelCobranza.security.application.dto.*;
 import coovitelCobranza.security.application.service.AuthApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -32,5 +29,12 @@ public class AuthController {
     public ResponseEntity<RegisterUserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authApplicationService.register(request));
     }
+
+    @PostMapping("/role")
+    public ResponseEntity<String> assignRole(@Valid @RequestBody UpdateRoleRequest request) {
+        return ResponseEntity.ok(authApplicationService.assignRole(request));
+    }
+
+
 }
 

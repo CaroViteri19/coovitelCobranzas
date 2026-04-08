@@ -1,9 +1,6 @@
 package coovitelCobranza.security.application.service;
 
-import coovitelCobranza.security.application.dto.LoginRequest;
-import coovitelCobranza.security.application.dto.LoginResponse;
-import coovitelCobranza.security.application.dto.RegisterUserRequest;
-import coovitelCobranza.security.application.dto.RegisterUserResponse;
+import coovitelCobranza.security.application.dto.*;
 import coovitelCobranza.security.application.exception.InvalidCredentialsException;
 import coovitelCobranza.security.application.exception.UserAlreadyExistsException;
 import coovitelCobranza.security.config.JwtProperties;
@@ -142,6 +139,16 @@ public class AuthApplicationService {
             return new String[]{parts[0], parts[0]};
         }
         return new String[]{parts[0], String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length))};
+    }
+
+    @Transactional
+    public String assignRole(UpdateRoleRequest  request) {
+        UserJpaEntity user = userRepository.findById(request.getIdUser()).orElseThrow(() -> new RuntimeException("User not found"));
+        List<RoleJpaEntity> roles = roleRepository.findAllById(request.getRole());
+        user.setRoles(new LinkedHashSet<>(roles));
+        // System.out.println("user: " + user + " roles: " + user.getRoles());
+        userRepository.save(user);
+        return "User" + user.getFullName() + " updated with roles "; //+ roles.stream().map(RoleJpaEntity::getName).toList();
     }
 }
 
