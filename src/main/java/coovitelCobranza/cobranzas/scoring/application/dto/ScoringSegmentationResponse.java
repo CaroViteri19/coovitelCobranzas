@@ -1,6 +1,6 @@
 package coovitelCobranza.cobranzas.scoring.application.dto;
 
-import coovitelCobranza.cobranzas.scoring.domain.model.ScoringSegmentacion;
+import coovitelCobranza.cobranzas.scoring.domain.model.ScoringSegmentation;
 
 import java.time.LocalDateTime;
 
@@ -15,15 +15,15 @@ public record ScoringSegmentationResponse(
         LocalDateTime createdAt
 ) {
 
-    public static ScoringSegmentationResponse fromDomain(ScoringSegmentacion scoring) {
+    public static ScoringSegmentationResponse fromDomain(ScoringSegmentation scoring) {
         return new ScoringSegmentationResponse(
                 scoring.getId(),
-                scoring.getClienteId(),
-                scoring.getObligacionId(),
+                scoring.getCustomerId(),
+                scoring.getObligationId(),
                 scoring.getScore(),
-                scoring.getSegmento(),
-                scoring.getVersionModelo(),
-                scoring.getRazonPrincipal(),
+                scoring.getSegment(),
+                scoring.getModelVersion(),
+                scoring.getMainReason(),
                 scoring.getCreatedAt()
         );
     }

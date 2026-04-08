@@ -1,4 +1,4 @@
-package coovitelCobranza.cobranzas.interaccion.domain.model;
+package coovitelCobranza.cobranzas.interaction.domain.model;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -11,41 +11,41 @@ import java.util.Objects;
  * con el cliente para cobrarle.
  * 
  * RESPONSABILIDADES:
- * - Registrar que se intentó contactar a un cliente
+ * - Register que se intentó contactar a un cliente
  * - Almacenar el canal usado (SMS, WhatsApp, Email, Llamada)
  * - Almacenar la plantilla de mensaje usada
- * - Registrar el resultado (entregado, leído, fallido, etc.)
+ * - Register el resultado (entregado, leído, fallido, etc.)
  * 
  * CASOS DE USO:
- *   1. Enviar SMS de recordatorio de pago
- *   2. Enviar email con detalles de deuda
- *   3. Enviar WhatsApp con aviso
- *   4. Registrar llamada telefónica
+ *   1. Send SMS de recordatorio de pago
+ *   2. Send email con details de deuda
+ *   3. Send WhatsApp con aviso
+ *   4. Register llamada telefónica
  * 
  * EJEMPLO DE USO:
- *   // Crear una interacción (enviar SMS)
- *   Interaction interaccion = Interaction.create(
+ *   // Create una interacción (enviar SMS)
+ *   Interaction interaction = Interaction.create(
  *       caseId,                      // ID del caso
- *       Channel.SMS,                 // Enviar por SMS
+ *       Channel.SMS,                 // Send por SMS
  *       "template_pago_pendiente"    // Plantilla a usar
  *   );
  *   
- *   // Registrar que se entregó exitosamente
- *   interaccion.markDelivered();
+ *   // Register que se entregó exitosamente
+ *   interaction.markDelivered();
  *   
  *   // O si el cliente leyó el mensaje
- *   interaccion.markRead();
+ *   interaction.markRead();
  *   
  *   // O si falló el envío
- *   interaccion.markFailed();
+ *   interaction.markFailed();
  * 
- * ENUM Channel (Canal de Comunicación):
+ * ENUM Channel (Channel de Comunicación):
  *   - SMS: Mensaje de texto
  *   - WHATSAPP: Mensaje por WhatsApp
  *   - EMAIL: Correo electrónico
  *   - VOICE: Llamada telefónica
  * 
- * ENUM ResultStatus (Resultado de la Interacción):
+ * ENUM ResultStatus (Result de la Interacción):
  *   - PENDING: Esperando envío
  *   - DELIVERED: Entregado al cliente
  *   - READ: El cliente leyó el mensaje
@@ -87,6 +87,10 @@ public class Interaction {
         return new Interaction(null, caseId, channel, template, ResultStatus.PENDING, LocalDateTime.now());
     }
 
+    public static Interaction crear(Long caseId, Channel channel, String template) {
+        return create(caseId, channel, template);
+    }
+
     /**
      * Factory method to reconstruct an interaction from persistence.
      *
@@ -110,6 +114,10 @@ public class Interaction {
         this.resultStatus = ResultStatus.DELIVERED;
     }
 
+    public void marcarEntregada() {
+        markDelivered();
+    }
+
     /**
      * Mark this interaction as read.
      */
@@ -117,11 +125,19 @@ public class Interaction {
         this.resultStatus = ResultStatus.READ;
     }
 
+    public void marcarLeida() {
+        markRead();
+    }
+
     /**
      * Mark this interaction as failed.
      */
     public void markFailed() {
         this.resultStatus = ResultStatus.FAILED;
+    }
+
+    public void marcarFallida() {
+        markFailed();
     }
 
     // Getters
@@ -141,7 +157,15 @@ public class Interaction {
         return template;
     }
 
+    public ResultStatus getResultStatusStatus() {
+        return resultStatus;
+    }
+
     public ResultStatus getResultStatus() {
+        return resultStatus;
+    }
+
+    public ResultStatus getResult() {
         return resultStatus;
     }
 
@@ -171,5 +195,3 @@ public class Interaction {
         NO_CONTACT    // Unable to contact customer
     }
 }
-
-

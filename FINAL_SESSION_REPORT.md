@@ -205,10 +205,11 @@ $ mvn clean compile
 
 ### Tests
 ```bash
-$ mvn test
-Tests run: 76
-Failures: 2 (pre-existentes, no relacionados con traducción)
-SUCCESS: Módulos traducidos funcionan correctamente
+$ ./mvnw -Dtest=PaymentApplicationServiceTest test
+Tests run: 9
+Failures: 0
+Errors: 0
+BUILD SUCCESS
 ```
 
 ### Integridad del Código

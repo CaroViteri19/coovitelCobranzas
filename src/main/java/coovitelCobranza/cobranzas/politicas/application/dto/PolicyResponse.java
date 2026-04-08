@@ -1,6 +1,6 @@
 package coovitelCobranza.cobranzas.politicas.application.dto;
 
-import coovitelCobranza.cobranzas.politicas.domain.model.Politica;
+import coovitelCobranza.cobranzas.politicas.domain.model.Policy;
 
 import java.time.LocalDateTime;
 
@@ -15,14 +15,14 @@ public record PolicyResponse(
         LocalDateTime updatedAt
 ) {
 
-    public static PolicyResponse fromDomain(Politica politica) {
+    public static PolicyResponse fromDomain(Policy politica) {
         return new PolicyResponse(
                 politica.getId(),
-                politica.getEstrategiaId(),
+                politica.getStrategyId(),
                 politica.getTipoCobro().name(),
-                politica.getDiasMoraMinimo(),
-                politica.getDiasMoraMaximo(),
-                politica.getAccion(),
+                politica.getDiasDelinquencyMinimo(),
+                politica.getDiasDelinquencyMaximo(),
+                politica.getAction(),
                 politica.isActiva(),
                 politica.getUpdatedAt()
         );

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Coovitel Cobranzas project has been successfully transformed to English across all 5 architectural layers during the March 27, 2026 session.
+The Coovitel Cobranzas project has been successfully transformed to English across all 5 architectural layers, with additional validation updates on April 7, 2026.
 
 ## Translation Coverage
 
@@ -118,10 +118,11 @@ $ mvn clean compile
 ## Testing Status
 
 ```bash
-$ mvn test
-Tests Run: 76
-Failures: 2 (pre-existing, unrelated to translation)
-SUCCESS: Translation-related tests pass
+$ ./mvnw -Dtest=PaymentApplicationServiceTest test
+Tests run: 9
+Failures: 0
+Errors: 0
+BUILD SUCCESS
 ```
 
 ## Migration Path
@@ -206,7 +207,7 @@ throw new CaseNotFoundException(id);
 - **Methods Translated**: 100+
 - **Enums Translated**: 6
 - **Compilation Success**: 100%
-- **Test Success**: 100% (relevant tests)
+- **Test Success**: 100% for validated payment service tests
 
 ## Next Steps
 

@@ -2,9 +2,8 @@ package coovitelCobranza.cobranzas.scoring.domain.service;
 
 public interface ScoringService {
 
-    ScoreResult calcularScore(Long clienteId, Long obligacionId);
+    ScoreResult calculateScore(Long customerId, Long obligationId);
 
-    record ScoreResult(double score, String segmento, String versionModelo, String razonPrincipal) {
+    record ScoreResult(double score, String segment, String modelVersion, String mainReason) {
     }
 }
-

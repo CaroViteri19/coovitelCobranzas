@@ -1,6 +1,6 @@
 package coovitelCobranza.cobranzas.pago.application.dto;
 
-import coovitelCobranza.cobranzas.pago.domain.model.Pago;
+import coovitelCobranza.cobranzas.pago.domain.model.Payment;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,15 +16,15 @@ public record PaymentResponse(
         LocalDateTime createdAt
 ) {
 
-    public static PaymentResponse fromDomain(Pago pago) {
+    public static PaymentResponse fromDomain(Payment pago) {
         return new PaymentResponse(
                 pago.getId(),
-                pago.getObligacionId(),
-                pago.getValor(),
-                pago.getReferenciaExterna(),
-                pago.getMetodo().name(),
-                pago.getEstado().name(),
-                pago.getConfirmadoAt(),
+                pago.getObligationId(),
+                pago.getAmount(),
+                pago.getExternalReference(),
+                pago.getMethod().name(),
+                pago.getStatus().name(),
+                pago.getConfirmedAt(),
                 pago.getCreatedAt()
         );
     }

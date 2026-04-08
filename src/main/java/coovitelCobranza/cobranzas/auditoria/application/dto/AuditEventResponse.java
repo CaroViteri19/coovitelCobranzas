@@ -1,6 +1,6 @@
 package coovitelCobranza.cobranzas.auditoria.application.dto;
 
-import coovitelCobranza.cobranzas.auditoria.domain.model.AuditoriaEvento;
+import coovitelCobranza.cobranzas.auditoria.domain.model.AuditEvent;
 
 import java.time.LocalDateTime;
 
@@ -14,12 +14,12 @@ public record AuditEventResponse(
         LocalDateTime createdAt
 ) {
 
-    public static AuditEventResponse fromDomain(AuditoriaEvento event) {
+    public static AuditEventResponse fromDomain(AuditEvent event) {
         return new AuditEventResponse(
                 event.getId(),
                 event.getEntidad(),
                 event.getEntidadId(),
-                event.getAccion(),
+                event.getAction(),
                 event.getUsuario(),
                 event.getDetalle(),
                 event.getCreatedAt()

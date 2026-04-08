@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: coovitel-cobranzas
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/coovitelcobranzas?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: mao
+    password: mao123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: true
+
+app:
+  security:
+    jwt:
+      secret: coovitel-cobranzas-dev-jwt-secret-key-must-be-at-least-32-bytes-long-for-hs256!!
+      issuer: coovitel-cobranzas
+      expiration-minutes: 480
+    bootstrap:
+      enabled: true
+      admin-username: admin
+      admin-password: Admin123!
+      admin-full-name: System Administrator
+

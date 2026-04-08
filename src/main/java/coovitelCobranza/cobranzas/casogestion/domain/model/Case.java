@@ -12,29 +12,29 @@ import java.util.Objects;
  * RESPONSABILIDADES:
  * - Almacenar información del caso (ID, obligación, prioridad, estado)
  * - Permitir asignar un asesor al caso
- * - Permitir programar acciones futuras
- * - Permitir cerrar el caso cuando se resuelve
+ * - Permitir programar actiones futuras
+ * - Permitir close el caso cuando se resuelve
  * 
  * EJEMPLO DE USO:
- *   // Crear un nuevo caso de cobranza
+ *   // Create un nuevo caso de cobranza
  *   Case miCaso = Case.create(obligationId, Priority.HIGH);
  *   
- *   // Asignar un asesor
+ *   // Assign un asesor
  *   miCaso.assignAdvisor("Juan Pérez");
  *   
- *   // Programar siguiente acción
+ *   // Schedule siguiente acción
  *   miCaso.scheduleNextAction(LocalDateTime.now().plusDays(7));
  *   
  *   // Cerrar el caso cuando se paga
  *   miCaso.close();
  * 
- * ENUM Priority (Prioridad):
+ * ENUM Priority (Priority):
  *   - LOW: Baja prioridad (deuda pequeña)
  *   - MEDIUM: Media prioridad (deuda normal)
  *   - HIGH: Alta prioridad (deuda grande)
  *   - CRITICAL: Crítica (deuda muy grande o atrasada)
  * 
- * ENUM Status (Estado):
+ * ENUM Status (Status):
  *   - OPEN: Caso abierto, sin asignar
  *   - IN_MANAGEMENT: En gestión con un asesor
  *   - PAUSED: Pausado (en espera de respuesta)
@@ -76,6 +76,10 @@ public class Case {
         return new Case(null, obligationId, priority, Status.OPEN, null, null);
     }
 
+    public static Case crear(Long obligationId, Priority priority) {
+        return create(obligationId, priority);
+    }
+
     /**
      * Factory method to reconstruct a case from persistence.
      *
@@ -115,6 +119,10 @@ public class Case {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void asignarAdvisor(String advisor) {
+        assignAdvisor(advisor);
+    }
+
     /**
      * Schedule the next action for this case.
      *
@@ -126,12 +134,20 @@ public class Case {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void programarSiguienteAction(LocalDateTime dateTime) {
+        scheduleNextAction(dateTime);
+    }
+
     /**
      * Close this case.
      */
     public void close() {
         this.status = Status.CLOSED;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void cerrar() {
+        close();
     }
 
     // Getters
@@ -147,16 +163,32 @@ public class Case {
         return priority;
     }
 
+    public Priority getPrioridad() {
+        return getPriority();
+    }
+
     public Status getStatus() {
         return status;
+    }
+
+    public Status getEstado() {
+        return getStatus();
     }
 
     public String getAssignedAdvisor() {
         return assignedAdvisor;
     }
 
+    public String getAdvisorAsignado() {
+        return getAssignedAdvisor();
+    }
+
     public LocalDateTime getNextActionAt() {
         return nextActionAt;
+    }
+
+    public LocalDateTime getProximaActionAt() {
+        return getNextActionAt();
     }
 
     public LocalDateTime getUpdatedAt() {
@@ -183,5 +215,3 @@ public class Case {
         CLOSED
     }
 }
-
-

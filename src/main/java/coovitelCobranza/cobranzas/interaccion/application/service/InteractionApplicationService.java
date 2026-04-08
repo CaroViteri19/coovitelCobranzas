@@ -1,13 +1,13 @@
-package coovitelCobranza.cobranzas.interaccion.application.service;
+package coovitelCobranza.cobranzas.interaction.application.service;
 
-import coovitelCobranza.cobranzas.interaccion.application.dto.UpdateInteractionResultRequest;
-import coovitelCobranza.cobranzas.interaccion.application.dto.CreateInteractionRequest;
-import coovitelCobranza.cobranzas.interaccion.application.dto.InteractionResponse;
-import coovitelCobranza.cobranzas.interaccion.application.exception.InteractionBusinessException;
-import coovitelCobranza.cobranzas.interaccion.application.exception.InteractionNotFoundException;
-import coovitelCobranza.cobranzas.interaccion.domain.event.InteraccionResultadoActualizadoEvent;
-import coovitelCobranza.cobranzas.interaccion.domain.model.Interaccion;
-import coovitelCobranza.cobranzas.interaccion.domain.repository.InteraccionRepository;
+import coovitelCobranza.cobranzas.interaction.application.dto.CreateInteractionRequest;
+import coovitelCobranza.cobranzas.interaction.application.dto.InteractionResponse;
+import coovitelCobranza.cobranzas.interaction.application.dto.UpdateInteractionResultRequest;
+import coovitelCobranza.cobranzas.interaction.application.exception.InteractionBusinessException;
+import coovitelCobranza.cobranzas.interaction.application.exception.InteractionNotFoundException;
+import coovitelCobranza.cobranzas.interaction.domain.event.InteractionResultActualizadoEvent;
+import coovitelCobranza.cobranzas.interaction.domain.model.Interaction;
+import coovitelCobranza.cobranzas.interaction.domain.repository.InteractionRepository;
 import coovitelCobranza.cobranzas.shared.domain.event.DomainEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,25 +18,21 @@ import java.util.List;
 @Service
 public class InteractionApplicationService {
 
-    private final InteraccionRepository interaccionRepository;
+    private final InteractionRepository interactionRepository;
     private final DomainEventPublisher eventPublisher;
 
-    public InteractionApplicationService(InteraccionRepository interaccionRepository,
+    public InteractionApplicationService(InteractionRepository interactionRepository,
                                          DomainEventPublisher eventPublisher) {
-        this.interaccionRepository = interaccionRepository;
+        this.interactionRepository = interactionRepository;
         this.eventPublisher = eventPublisher;
     }
 
     @Transactional
     public InteractionResponse createInteraction(CreateInteractionRequest request) {
         try {
-            // Validate channel
-            Interaccion.Canal channel = Interaccion.Canal.valueOf(request.channel());
-
-            // Create new interaction
-            Interaccion interaccion = Interaccion.crear(request.caseId(), channel, request.template());
-
-            Interaccion savedInteraction = interaccionRepository.save(interaccion);
+            Interaction.Channel channel = Interaction.Channel.valueOf(request.channel());
+            Interaction interaction = Interaction.create(request.caseId(), channel, request.template());
+            Interaction savedInteraction = interactionRepository.save(interaction);
             return InteractionResponse.fromDomain(savedInteraction);
         } catch (IllegalArgumentException e) {
             throw new InteractionBusinessException("Invalid channel: " + request.channel());
@@ -47,42 +43,39 @@ public class InteractionApplicationService {
 
     @Transactional(readOnly = true)
     public InteractionResponse getById(Long id) {
-        Interaccion interaccion = interaccionRepository.findById(id)
+        Interaction interaction = interactionRepository.findById(id)
                 .orElseThrow(() -> new InteractionNotFoundException(id));
-        return InteractionResponse.fromDomain(interaccion);
+        return InteractionResponse.fromDomain(interaction);
     }
 
     @Transactional(readOnly = true)
     public List<InteractionResponse> listByCase(Long caseId) {
-        return interaccionRepository.findByCasoGestionId(caseId).stream()
+        return interactionRepository.findByCaseId(caseId).stream()
                 .map(InteractionResponse::fromDomain)
                 .toList();
     }
 
     @Transactional
     public InteractionResponse updateResult(Long id, UpdateInteractionResultRequest request) {
-        Interaccion interaccion = interaccionRepository.findById(id)
+        Interaction interaction = interactionRepository.findById(id)
                 .orElseThrow(() -> new InteractionNotFoundException(id));
 
         try {
-            Interaccion.EstadoResultado newResult = Interaccion.EstadoResultado.valueOf(request.result());
-
-            // Update status according to result
+            Interaction.ResultStatus newResult = Interaction.ResultStatus.valueOf(request.result());
             switch (newResult) {
-                case ENTREGADA -> interaccion.marcarEntregada();
-                case LEIDA -> interaccion.marcarLeida();
-                case FALLIDA -> interaccion.marcarFallida();
+                case DELIVERED -> interaction.markDelivered();
+                case READ -> interaction.markRead();
+                case FAILED -> interaction.markFailed();
                 default -> {
-                    // For other statuses, would need to add methods in the model
+                    // keep current result when no action is required
                 }
             }
 
-            Interaccion updatedInteraction = interaccionRepository.save(interaccion);
-
-            eventPublisher.publish(new InteraccionResultadoActualizadoEvent(
+            Interaction updatedInteraction = interactionRepository.save(interaction);
+            eventPublisher.publish(new InteractionResultActualizadoEvent(
                     updatedInteraction.getId(),
-                    updatedInteraction.getCasoGestionId(),
-                    updatedInteraction.getResultado().name(),
+                    updatedInteraction.getCaseId(),
+                    updatedInteraction.getResultStatus().name(),
                     Instant.now()
             ));
 
@@ -92,4 +85,3 @@ public class InteractionApplicationService {
         }
     }
 }
-

@@ -1,6 +1,6 @@
 package coovitelCobranza.cobranzas.politicas.application.dto;
 
-import coovitelCobranza.cobranzas.politicas.domain.model.Estrategia;
+import coovitelCobranza.cobranzas.politicas.domain.model.Strategy;
 
 import java.time.LocalDateTime;
 
@@ -15,13 +15,13 @@ public record StrategyResponse(
         LocalDateTime updatedAt
 ) {
 
-    public static StrategyResponse fromDomain(Estrategia estrategia) {
+    public static StrategyResponse fromDomain(Strategy estrategia) {
         return new StrategyResponse(
                 estrategia.getId(),
                 estrategia.getNombre(),
                 estrategia.getDescripcion(),
                 estrategia.isActiva(),
-                estrategia.getMaxIntentosContacto(),
+                estrategia.getMaxIntentosContact(),
                 estrategia.getDiasAntesDeeEscalacion(),
                 estrategia.getRolAsignacionEscalada(),
                 estrategia.getUpdatedAt()

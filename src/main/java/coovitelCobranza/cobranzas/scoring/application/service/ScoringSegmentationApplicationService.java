@@ -4,9 +4,9 @@ import coovitelCobranza.cobranzas.scoring.application.dto.CalculateScoringReques
 import coovitelCobranza.cobranzas.scoring.application.dto.ScoringSegmentationResponse;
 import coovitelCobranza.cobranzas.scoring.application.exception.ScoringSegmentationBusinessException;
 import coovitelCobranza.cobranzas.scoring.application.exception.ScoringSegmentationNotFoundException;
-import coovitelCobranza.cobranzas.scoring.domain.model.ScoringSegmentacion;
-import coovitelCobranza.cobranzas.scoring.domain.repository.ScoringSegmentacionRepository;
-import coovitelCobranza.cobranzas.scoring.domain.service.ReglasScoringService;
+import coovitelCobranza.cobranzas.scoring.domain.model.ScoringSegmentation;
+import coovitelCobranza.cobranzas.scoring.domain.repository.ScoringSegmentationRepository;
+import coovitelCobranza.cobranzas.scoring.domain.service.ScoringRulesService;
 import coovitelCobranza.cobranzas.scoring.domain.service.ScoringService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +16,13 @@ import java.util.List;
 @Service
 public class ScoringSegmentationApplicationService {
 
-    private final ScoringSegmentacionRepository scoringRepository;
-    private final ReglasScoringService reglasScoringService;
+    private final ScoringSegmentationRepository scoringRepository;
+    private final ScoringRulesService scoringRulesService;
 
-    public ScoringSegmentationApplicationService(ScoringSegmentacionRepository scoringRepository,
-                                                 ReglasScoringService reglasScoringService) {
+    public ScoringSegmentationApplicationService(ScoringSegmentationRepository scoringRepository,
+                                                 ScoringRulesService scoringRulesService) {
         this.scoringRepository = scoringRepository;
-        this.reglasScoringService = reglasScoringService;
+        this.scoringRulesService = scoringRulesService;
     }
 
     @Transactional
@@ -32,22 +32,22 @@ public class ScoringSegmentationApplicationService {
                 throw new ScoringSegmentationBusinessException("customerId and obligationId are required");
             }
 
-            ScoringService.ScoreResult result = reglasScoringService.calcularConDatos(
+            ScoringService.ScoreResult result = scoringRulesService.calculateWithData(
                     request.delinquencyDays(),
                     request.overdueBalance(),
                     request.contactAttempts()
             );
 
-            ScoringSegmentacion scoring = ScoringSegmentacion.crear(
+            ScoringSegmentation scoring = ScoringSegmentation.create(
                     request.customerId(),
                     request.obligationId(),
                     result.score(),
-                    result.segmento(),
-                    result.versionModelo(),
-                    result.razonPrincipal()
+                    result.segment(),
+                    result.modelVersion(),
+                    result.mainReason()
             );
 
-            ScoringSegmentacion saved = scoringRepository.save(scoring);
+            ScoringSegmentation saved = scoringRepository.save(scoring);
             return ScoringSegmentationResponse.fromDomain(saved);
         } catch (ScoringSegmentationBusinessException e) {
             throw e;
@@ -58,23 +58,22 @@ public class ScoringSegmentationApplicationService {
 
     @Transactional(readOnly = true)
     public ScoringSegmentationResponse getById(Long id) {
-        ScoringSegmentacion scoring = scoringRepository.findById(id)
+        ScoringSegmentation scoring = scoringRepository.findById(id)
                 .orElseThrow(() -> new ScoringSegmentationNotFoundException(id));
         return ScoringSegmentationResponse.fromDomain(scoring);
     }
 
     @Transactional(readOnly = true)
     public ScoringSegmentationResponse getLatestByObligation(Long obligationId) {
-        ScoringSegmentacion scoring = scoringRepository.findTopByObligacionIdOrderByCreatedAtDesc(obligationId)
+        ScoringSegmentation scoring = scoringRepository.findTopByObligationIdOrderByCreatedAtDesc(obligationId)
                 .orElseThrow(() -> new ScoringSegmentationNotFoundException("obligationId=" + obligationId));
         return ScoringSegmentationResponse.fromDomain(scoring);
     }
 
     @Transactional(readOnly = true)
     public List<ScoringSegmentationResponse> listByCustomer(Long customerId) {
-        return scoringRepository.findByClienteIdOrderByCreatedAtDesc(customerId).stream()
+        return scoringRepository.findByClientIdOrderByCreatedAtDesc(customerId).stream()
                 .map(ScoringSegmentationResponse::fromDomain)
                 .toList();
     }
 }
-

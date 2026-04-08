@@ -1,6 +1,6 @@
-package coovitelCobranza.cobranzas.interaccion.application.dto;
+package coovitelCobranza.cobranzas.interaction.application.dto;
 
-import coovitelCobranza.cobranzas.interaccion.domain.model.Interaccion;
+import coovitelCobranza.cobranzas.interaction.domain.model.Interaction;
 
 import java.time.LocalDateTime;
 
@@ -13,14 +13,14 @@ public record InteractionResponse(
         LocalDateTime createdAt
 ) {
 
-    public static InteractionResponse fromDomain(Interaccion interaccion) {
+    public static InteractionResponse fromDomain(Interaction interaction) {
         return new InteractionResponse(
-                interaccion.getId(),
-                interaccion.getCasoGestionId(),
-                interaccion.getCanal().name(),
-                interaccion.getPlantilla(),
-                interaccion.getResultado().name(),
-                interaccion.getCreatedAt()
+                interaction.getId(),
+                interaction.getCaseId(),
+                interaction.getChannel().name(),
+                interaction.getTemplate(),
+                interaction.getResultStatus().name(),
+                interaction.getCreatedAt()
         );
     }
 }

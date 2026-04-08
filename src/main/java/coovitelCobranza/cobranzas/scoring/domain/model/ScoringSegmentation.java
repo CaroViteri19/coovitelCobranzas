@@ -12,21 +12,21 @@ import java.util.Objects;
  * RESPONSABILIDADES:
  * - Almacenar el score de crédito (puntuación 0-100)
  * - Almacenar en qué SEGMENTO cae el cliente (bajo riesgo, medio, alto, etc)
- * - Registrar la versión del modelo de IA usado para calcular el score
- * - Registrar la razón principal del segmento asignado
+ * - Register la versión del modelo de IA usado para calcular el score
+ * - Register la razón principal del segmento asignado
  * 
  * CASOS DE USO:
  * 1. CLASIFICACIÓN DE CLIENTES:
- *    - Score 90-100: Clientes premium, bajo riesgo → Contacto suave
- *    - Score 60-89: Clientes normales → Contacto estándar
- *    - Score 30-59: Clientes en riesgo → Contacto más frecuente
- *    - Score 0-29: Clientes en alto riesgo → Acciones urgentes
+ *    - Score 90-100: Clients premium, bajo riesgo → Contact suave
+ *    - Score 60-89: Clients normales → Contact estándar
+ *    - Score 30-59: Clients en riesgo → Contact más frecuente
+ *    - Score 0-29: Clients en alto riesgo → Actiones urgentes
  * 
  * 2. ASIGNACIÓN DE ESTRATEGIA DE COBRANZA:
  *    - Según el score, se asigna qué asesor, qué frecuencia de contacto, etc.
  * 
  * EJEMPLO DE USO:
- *   // Calcular scoring para un cliente
+ *   // Calculate scoring para un cliente
  *   ScoringSegmentation scoring = ScoringSegmentation.create(
  *       customerId,                    // ID del cliente
  *       obligationId,                  // ID de la obligación
@@ -38,11 +38,11 @@ import java.util.Objects;
  *   
  *   // Usar el scoring para asignar estrategia
  *   if (scoring.getScore() > 80) {
- *       // Cliente bajo riesgo - contacto simple
+ *       // Client bajo riesgo - contacto simple
  *   } else if (scoring.getScore() > 50) {
- *       // Cliente medio riesgo - contacto normal
+ *       // Client medio riesgo - contacto normal
  *   } else {
- *       // Cliente alto riesgo - contacto urgente
+ *       // Client alto riesgo - contacto urgente
  *   }
  * 
  * CAMPOS IMPORTANTES:
@@ -109,6 +109,15 @@ public class ScoringSegmentation {
                 mainReason, LocalDateTime.now());
     }
 
+    public static ScoringSegmentation crear(Long customerId,
+                                            Long obligationId,
+                                            double score,
+                                            String segment,
+                                            String modelVersion,
+                                            String mainReason) {
+        return create(customerId, obligationId, score, segment, modelVersion, mainReason);
+    }
+
     /**
      * Factory method to reconstruct a scoring from persistence.
      *
@@ -134,6 +143,17 @@ public class ScoringSegmentation {
                 mainReason, createdAt);
     }
 
+    public static ScoringSegmentation reconstruir(Long id,
+                                                   Long customerId,
+                                                   Long obligationId,
+                                                   double score,
+                                                   String segment,
+                                                   String modelVersion,
+                                                   String mainReason,
+                                                   LocalDateTime createdAt) {
+        return reconstruct(id, customerId, obligationId, score, segment, modelVersion, mainReason, createdAt);
+    }
+
     // Getters (immutable value object)
     public Long getId() {
         return id;
@@ -141,6 +161,10 @@ public class ScoringSegmentation {
 
     public Long getCustomerId() {
         return customerId;
+    }
+
+    public Long getClientId() {
+        return getCustomerId();
     }
 
     public Long getObligationId() {
@@ -155,17 +179,27 @@ public class ScoringSegmentation {
         return segment;
     }
 
+    public String getSegmento() {
+        return getSegment();
+    }
+
     public String getModelVersion() {
         return modelVersion;
+    }
+
+    public String getVersionModelo() {
+        return getModelVersion();
     }
 
     public String getMainReason() {
         return mainReason;
     }
 
+    public String getRazonPrincipal() {
+        return getMainReason();
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 }
-
-

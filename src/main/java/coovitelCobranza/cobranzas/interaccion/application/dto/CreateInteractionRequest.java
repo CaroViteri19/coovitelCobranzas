@@ -1,4 +1,4 @@
-package coovitelCobranza.cobranzas.interaccion.application.dto;
+package coovitelCobranza.cobranzas.interaction.application.dto;
 
 public record CreateInteractionRequest(
         Long caseId,

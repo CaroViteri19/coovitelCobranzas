@@ -13,17 +13,17 @@ import java.util.Objects;
  * RESPONSABILIDADES:
  * - Almacenar información del pago (ID, monto, referencia externa, método)
  * - Mantener el estado del pago (pendiente, confirmado, rechazado, expirado)
- * - Permitir confirmar un pago cuando se valida
- * - Permitir rechazar un pago si hay error
+ * - Permitir confirm un pago cuando se valida
+ * - Permitir reject un pago si hay error
  * 
  * FLUJO DE ESTADO:
  *   1. PENDING (Pendiente): Se crea cuando se inicia el pago
- *   2. CONFIRMED (Confirmado): Se confirma cuando recibimos validación del banco
+ *   2. CONFIRMED (Confirmed): Se confirma cuando recibimos validación del banco
  *   3. REJECTED (Rechazado): Si falla la validación
- *   4. EXPIRED (Expirado): Si pasa mucho tiempo sin confirmarse
+ *   4. EXPIRED (Expirado): Si pasa mucho tiempo sin confirmse
  * 
  * EJEMPLO DE USO:
- *   // Crear un nuevo pago
+ *   // Create un nuevo pago
  *   Payment pago = Payment.createPending(
  *       obligationId, 
  *       BigDecimal.valueOf(500000),  // Monto
@@ -37,15 +37,15 @@ import java.util.Objects;
  *   // O si hay error
  *   pago.reject();
  * 
- * ENUM PaymentMethod (Método de Pago):
- *   - PSE: Pago Seguro en Línea (transferencia bancaria Colombia)
+ * ENUM PaymentMethod (Método de Payment):
+ *   - PSE: Payment Seguro en Línea (transferencia bancaria Colombia)
  *   - CARD: Tarjeta de crédito/débito
  *   - TRANSFER: Transferencia manual
- *   - OFFICE: Pago en oficina física
+ *   - OFFICE: Payment en oficina física
  * 
- * ENUM PaymentStatus (Estado del Pago):
+ * ENUM PaymentStatus (Status del Payment):
  *   - PENDING: Esperando confirmación
- *   - CONFIRMED: Confirmado y validado
+ *   - CONFIRMED: Confirmed y validado
  *   - REJECTED: Rechazado por error
  *   - EXPIRED: Expiró el plazo
  */
@@ -92,6 +92,10 @@ public class Payment {
                 LocalDateTime.now());
     }
 
+    public static Payment crearPendiente(Long obligationId, BigDecimal amount, String externalReference, PaymentMethod method) {
+        return createPending(obligationId, amount, externalReference, method);
+    }
+
     /**
      * Factory method to reconstruct a payment from persistence.
      *
@@ -124,11 +128,19 @@ public class Payment {
         this.confirmedAt = LocalDateTime.now();
     }
 
+    public void confirmar() {
+        confirm();
+    }
+
     /**
      * Reject this payment.
      */
     public void reject() {
         this.status = PaymentStatus.REJECTED;
+    }
+
+    public void rechazar() {
+        reject();
     }
 
     // Getters
@@ -144,16 +156,32 @@ public class Payment {
         return amount;
     }
 
+    public BigDecimal getValor() {
+        return getAmount();
+    }
+
     public String getExternalReference() {
         return externalReference;
+    }
+
+    public String getReferenciaExterna() {
+        return getExternalReference();
     }
 
     public PaymentMethod getMethod() {
         return method;
     }
 
+    public PaymentMethod getMetodo() {
+        return getMethod();
+    }
+
     public PaymentStatus getStatus() {
         return status;
+    }
+
+    public PaymentStatus getEstado() {
+        return getStatus();
     }
 
     public LocalDateTime getConfirmedAt() {
@@ -184,5 +212,3 @@ public class Payment {
         EXPIRED           // Payment link expired
     }
 }
-
-
