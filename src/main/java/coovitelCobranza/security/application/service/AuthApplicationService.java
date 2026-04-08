@@ -76,7 +76,14 @@ public class AuthApplicationService {
         UserJpaEntity user = new UserJpaEntity();
         String[] nameParts = splitFullName(request.fullName().trim());
         user.setUsername(request.username().trim());
-        user.setPassword(passwordEncoder.encode(request.password()));
+
+        // Valida que la contraseña tenga minimo 12 caracteres y al menos 1 espcial
+        if (request.password().matches("^(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{12,}$")) {
+            user.setPassword(passwordEncoder.encode(request.password()));
+        } else {
+            throw new IllegalArgumentException("Password must be at least 12 characters long and contain at least one special character");
+        }
+
         user.setFullName(request.fullName().trim());
         user.setFirstName(nameParts[0]);
         user.setLastName(nameParts[1]);

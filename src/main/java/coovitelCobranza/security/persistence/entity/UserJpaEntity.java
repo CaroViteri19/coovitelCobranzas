@@ -62,13 +62,17 @@ public class UserJpaEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleJpaEntity> roles = new LinkedHashSet<>();
 
+    private Boolean failedAttemps;
+
+    private Boolean isLocked;
+
     public UserJpaEntity() {
     }
 
     public UserJpaEntity(Long id, String username, String password, String fullName, String firstName,
                             String lastName, String email,
                             boolean enabled, boolean locked, LocalDateTime createdAt, LocalDateTime updatedAt,
-                            Set<RoleJpaEntity> roles) {
+                            Set<RoleJpaEntity> roles,  Boolean failedAttemps, Boolean isLocked) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -83,6 +87,8 @@ public class UserJpaEntity {
         if (roles != null) {
             this.roles = new LinkedHashSet<>(roles);
         }
+        this.failedAttemps = failedAttemps;
+        this.isLocked = isLocked;
     }
 
     public Long getId() {
