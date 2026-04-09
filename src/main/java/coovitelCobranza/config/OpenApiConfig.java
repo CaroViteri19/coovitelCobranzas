@@ -9,9 +9,18 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuración de OpenAPI (Swagger) para la documentación de la API de Coovitel Cobranzas.
+ * Define la información de la API, contacto y esquema de seguridad JWT para autenticación.
+ */
 @Configuration
 public class OpenApiConfig {
 
+    /**
+     * Crea la configuración de OpenAPI para la API de Coovitel Cobranzas.
+     *
+     * @return objeto OpenAPI configurado con información de la API, seguridad JWT y detalles de contacto
+     */
     @Bean
     public OpenAPI coovitelOpenApi() {
 

@@ -4,6 +4,11 @@ import coovitelCobranza.cobranzas.cliente.domain.model.Client;
 
 import java.time.LocalDateTime;
 
+/**
+ * Respuesta de datos del cliente para operaciones de lectura.
+ * Contiene la información completa del cliente incluyendo consentimientos
+ * para canales de comunicación.
+ */
 public record ClientResponse(
         Long id,
         String tipoDocumento,
@@ -17,6 +22,12 @@ public record ClientResponse(
         LocalDateTime updatedAt
 ) {
 
+    /**
+     * Convierte un modelo de dominio Cliente a un DTO de respuesta.
+     *
+     * @param cliente modelo del cliente a convertir
+     * @return respuesta del cliente mapeada desde el modelo de dominio
+     */
     public static ClientResponse fromDomain(Client cliente) {
         return new ClientResponse(
                 cliente.getId(),

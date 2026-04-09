@@ -11,9 +11,19 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manejador centralizado de excepciones para operaciones de clientes.
+ * Traduce excepciones de negocio a respuestas HTTP apropiadas con detalles del error.
+ */
 @RestControllerAdvice
 public class ClientExceptionHandler {
 
+    /**
+     * Maneja excepciones cuando no se encuentra un cliente.
+     *
+     * @param ex excepción lanzada cuando el cliente no existe
+     * @return ResponseEntity con status 404 y detalles del error
+     */
     @ExceptionHandler(ClientNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleClientNotFoundException(ClientNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
@@ -24,6 +34,12 @@ public class ClientExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    /**
+     * Maneja excepciones cuando se viola una regla de negocio.
+     *
+     * @param ex excepción lanzada por violación de reglas de negocio
+     * @return ResponseEntity con status 400 y detalles del error
+     */
     @ExceptionHandler(ClientBusinessException.class)
     public ResponseEntity<Map<String, Object>> handleClientBusinessException(ClientBusinessException ex) {
         Map<String, Object> body = new HashMap<>();
@@ -34,6 +50,12 @@ public class ClientExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    /**
+     * Maneja excepciones genéricas no previstas.
+     *
+     * @param ex excepción genérica capturada
+     * @return ResponseEntity con status 500 y detalles del error
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
         Map<String, Object> body = new HashMap<>();

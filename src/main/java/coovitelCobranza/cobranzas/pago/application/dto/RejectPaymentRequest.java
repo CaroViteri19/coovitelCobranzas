@@ -1,5 +1,13 @@
 package coovitelCobranza.cobranzas.pago.application.dto;
 
-public record RejectPaymentRequest(Long paymentId) {
+/**
+ * DTO para solicitar el rechazo de un pago.
+ */
+public record RejectPaymentRequest(
+        /**
+         * Identificador del pago a rechazar.
+         */
+        Long paymentId
+) {
 }
 

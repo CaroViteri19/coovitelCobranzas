@@ -11,15 +11,32 @@ import coovitelCobranza.cobranzas.cliente.domain.repository.ClientRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Servicio de aplicación para gestionar operaciones de clientes.
+ * Coordina la interacción entre las solicitudes HTTP, la lógica de negocio
+ * y la persistencia de datos.
+ */
 @Service
 public class ClientApplicationService {
 
     private final ClientRepository clienteRepository;
 
+    /**
+     * Construye el servicio de aplicación de clientes.
+     *
+     * @param clienteRepository repositorio de acceso a datos de clientes
+     */
     public ClientApplicationService(ClientRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
     }
 
+    /**
+     * Crea un nuevo cliente en el sistema.
+     *
+     * @param request datos para crear el cliente
+     * @return respuesta con datos del cliente creado
+     * @throws ClientBusinessException si el cliente ya existe o hay error en los datos
+     */
     @Transactional
     public ClientResponse create(CreateClientRequest request) {
         try {
@@ -49,6 +66,13 @@ public class ClientApplicationService {
         }
     }
 
+    /**
+     * Obtiene un cliente por su identificador único.
+     *
+     * @param id identificador del cliente
+     * @return respuesta con datos del cliente
+     * @throws ClientNotFoundException si el cliente no existe
+     */
     @Transactional(readOnly = true)
     public ClientResponse getById(Long id) {
         Client client = clienteRepository.findById(id)
@@ -56,6 +80,14 @@ public class ClientApplicationService {
         return ClientResponse.fromDomain(client);
     }
 
+    /**
+     * Obtiene un cliente por tipo y número de documento.
+     *
+     * @param tipoDocumento tipo de documento del cliente
+     * @param numeroDocumento número de documento del cliente
+     * @return respuesta con datos del cliente
+     * @throws ClientNotFoundException si el cliente no existe
+     */
     @Transactional(readOnly = true)
     public ClientResponse getByDocument(String tipoDocumento, String numeroDocumento) {
         Client client = clienteRepository.findByDocumento(tipoDocumento, numeroDocumento)
@@ -63,6 +95,14 @@ public class ClientApplicationService {
         return ClientResponse.fromDomain(client);
     }
 
+    /**
+     * Actualiza la información de contacto de un cliente.
+     *
+     * @param id identificador del cliente
+     * @param request datos de contacto a actualizar
+     * @return respuesta con datos del cliente actualizado
+     * @throws ClientNotFoundException si el cliente no existe
+     */
     @Transactional
     public ClientResponse updateContact(Long id, UpdateContactClientRequest request) {
         Client client = clienteRepository.findById(id)
@@ -73,6 +113,14 @@ public class ClientApplicationService {
         return ClientResponse.fromDomain(updatedClient);
     }
 
+    /**
+     * Actualiza los consentimientos de comunicación de un cliente.
+     *
+     * @param id identificador del cliente
+     * @param request consentimientos a actualizar
+     * @return respuesta con datos del cliente actualizado
+     * @throws ClientNotFoundException si el cliente no existe
+     */
     @Transactional
     public ClientResponse updateConsents(Long id, UpdateConsentsClientRequest request) {
         Client client = clienteRepository.findById(id)

@@ -13,6 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST para gestionar operaciones de clientes.
+ * Expone endpoints para crear, buscar y actualizar información de clientes.
+ */
 @RestController
 @RequestMapping("/api/v1/clients")
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -20,22 +24,45 @@ public class ClientController {
 
     private final ClientApplicationService clienteApplicationService;
 
+    /**
+     * Construye el controlador de clientes.
+     *
+     * @param clienteApplicationService servicio de aplicación para clientes
+     */
     public ClientController(ClientApplicationService clienteApplicationService) {
         this.clienteApplicationService = clienteApplicationService;
     }
 
+    /**
+     * Crea un nuevo cliente.
+     *
+     * @param request datos del cliente a crear
+     * @return ResponseEntity con status 201 y datos del cliente creado
+     */
     @PostMapping
     public ResponseEntity<ClientResponse> create(@RequestBody CreateClientRequest request) {
         ClientResponse response = clienteApplicationService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /**
+     * Busca un cliente por su identificador único.
+     *
+     * @param request solicitud con el ID del cliente
+     * @return ResponseEntity con status 200 y datos del cliente
+     */
     @PostMapping("/search/id")
     public ResponseEntity<ClientResponse> getById(@RequestBody GetClientByIdRequest request) {
         ClientResponse response = clienteApplicationService.getById(request.clientId());
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Busca un cliente por tipo y número de documento.
+     *
+     * @param request solicitud con tipo y número de documento
+     * @return ResponseEntity con status 200 y datos del cliente
+     */
     @PostMapping("/search/document")
     public ResponseEntity<ClientResponse> getByDocument(@RequestBody GetClientByDocumentRequest request) {
         ClientResponse response = clienteApplicationService.getByDocument(
@@ -45,6 +72,12 @@ public class ClientController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Actualiza la información de contacto de un cliente.
+     *
+     * @param request datos de contacto a actualizar
+     * @return ResponseEntity con status 200 y datos del cliente actualizado
+     */
     @PostMapping("/update/contact")
     public ResponseEntity<ClientResponse> updateContact(@RequestBody UpdateClientContactRequest request) {
         ClientResponse response = clienteApplicationService.updateContact(
@@ -54,6 +87,12 @@ public class ClientController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Actualiza los consentimientos de comunicación de un cliente.
+     *
+     * @param request consentimientos a actualizar
+     * @return ResponseEntity con status 200 y datos del cliente actualizado
+     */
     @PostMapping("/update/consents")
     public ResponseEntity<ClientResponse> updateConsents(@RequestBody UpdateClientConsentsRequest request) {
         ClientResponse response = clienteApplicationService.updateConsents(

@@ -30,6 +30,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Servicio de aplicación para gestionar la autenticación y registro de usuarios.
+ * Maneja el proceso de login, registro y asignación de roles con autenticación basada en JWT.
+ */
 @Service
 public class AuthApplicationService {
 
@@ -41,6 +45,16 @@ public class AuthApplicationService {
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
 
+    /**
+     * Constructor con inyección de dependencias.
+     *
+     * @param authenticationManager Gestor de autenticación.
+     * @param jwtEncoder Codificador de JWT.
+     * @param jwtProperties Propiedades de configuración de JWT.
+     * @param userRepository Repositorio de usuarios.
+     * @param roleRepository Repositorio de roles.
+     * @param passwordEncoder Codificador de contraseñas.
+     */
     public AuthApplicationService(AuthenticationManager authenticationManager,
                                   JwtEncoder jwtEncoder,
                                   JwtProperties jwtProperties,
@@ -57,6 +71,14 @@ public class AuthApplicationService {
         this.auditService = auditService;
     }
 
+    /**
+     * Registra un nuevo usuario en el sistema.
+     * Verifica la unicidad del usuario y email, codifica la contraseña y asigna el rol por defecto.
+     *
+     * @param request Solicitud de registro con los datos del usuario.
+     * @return Respuesta con la información del usuario creado.
+     * @throws UserAlreadyExistsException Si el usuario o email ya existen en el sistema.
+     */
     @Transactional
     public RegisterUserResponse register(RegisterUserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
@@ -161,6 +183,14 @@ public class AuthApplicationService {
         );
     }
 
+    /**
+     * Autentica un usuario y genera un token JWT.
+     * Valida las credenciales y crea un token firmado con la información del usuario.
+     *
+     * @param request Solicitud de login con credenciales.
+     * @return Respuesta con el token JWT y datos del usuario autenticado.
+     * @throws InvalidCredentialsException Si las credenciales son inválidas.
+     */
     public LoginResponse login(LoginRequest request) {
         UserJpaEntity user = userRepository.findByUsername(request.username()).orElseThrow(() -> {
             // Log failed login attempt - user not found
@@ -270,6 +300,12 @@ public class AuthApplicationService {
         }
     }
 
+    /**
+     * Divide el nombre completo en primer nombre y apellidos.
+     *
+     * @param fullName Nombre completo a dividir.
+     * @return Array con [primer nombre, apellidos].
+     */
     private String[] splitFullName(String fullName) {
         String trimmed = fullName == null ? "" : fullName.trim();
         if (trimmed.isEmpty()) {
@@ -282,6 +318,14 @@ public class AuthApplicationService {
         return new String[]{parts[0], String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length))};
     }
 
+    /**
+     * Asigna nuevos roles a un usuario existente.
+     * Reemplaza los roles actuales con los especificados en la solicitud.
+     *
+     * @param request Solicitud con el identificador del usuario y roles a asignar.
+     * @return Mensaje confirmando la actualización de roles.
+     * @throws RuntimeException Si el usuario no se encuentra en el sistema.
+     */
     @Transactional
     public String assignRole(UpdateRoleRequest  request) {
         UserJpaEntity user = userRepository.findById(request.idUser()).orElseThrow(() -> new RuntimeException("User not found"));
