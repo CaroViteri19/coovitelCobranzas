@@ -53,14 +53,11 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
             return;
         }
 
-        RoleJpaEntity adminRole = roleRepository.findByName("ADMIN")
-                .orElseGet(() -> {
-                    RoleJpaEntity role = new RoleJpaEntity();
-                    role.setName("ADMIN");
-                    role.setDescription("System administrator role");
-                    role.setCreatedAt(LocalDateTime.now());
-                    return roleRepository.save(role);
-                });
+        // Crear los 4 roles del sistema si no existen
+        RoleJpaEntity adminRole = createRoleIfNotExists("ADMINISTRADOR", "Acceso total al sistema. Gestiona usuarios, configuracion y todos los modulos.");
+        createRoleIfNotExists("SUPERVISOR",    "Supervisa agentes y casos. Acceso de escritura en gestion, recaudo y orquestacion.");
+        createRoleIfNotExists("AGENTE",        "Ejecuta gestiones de cobranza. Acceso a casos, interacciones y recaudo.");
+        createRoleIfNotExists("AUDITOR",       "Revision y auditoria. Acceso de solo lectura en todos los modulos.");
 
         if (userRepository.existsByUsername(bootstrapProperties.getAdminUsername())) {
             return;
@@ -81,6 +78,24 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
         adminUser.setRoles(new LinkedHashSet<>());
         adminUser.addRole(adminRole);
         userRepository.save(adminUser);
+    }
+
+    /**
+     * Crea un rol si no existe en la base de datos.
+     *
+     * @param name nombre del rol
+     * @param description descripcion del rol
+     * @return el rol existente o el recien creado
+     */
+    private RoleJpaEntity createRoleIfNotExists(String name, String description) {
+        return roleRepository.findByName(name)
+                .orElseGet(() -> {
+                    RoleJpaEntity role = new RoleJpaEntity();
+                    role.setName(name);
+                    role.setDescription(description);
+                    role.setCreatedAt(LocalDateTime.now());
+                    return roleRepository.save(role);
+                });
     }
 
     /**

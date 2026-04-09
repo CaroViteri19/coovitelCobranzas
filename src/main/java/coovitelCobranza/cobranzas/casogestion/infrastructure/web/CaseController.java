@@ -12,6 +12,7 @@ import coovitelCobranza.cobranzas.casogestion.application.dto.TransitionCaseStat
 import coovitelCobranza.cobranzas.casogestion.application.service.CaseApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class CaseController {
      * @param request DTO con los datos del caso a crear
      * @return ResponseEntity con status 201 y el caso creado
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
     @PostMapping
     public ResponseEntity<CaseResponse> create(@RequestBody CreateCaseRequest request) {
         CaseResponse response = caseApplicationService.createCase(request);
@@ -56,6 +58,7 @@ public class CaseController {
      * @param request DTO con el ID del caso a recuperar
      * @return ResponseEntity con status 200 y el caso solicitado
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/search/id")
     public ResponseEntity<CaseResponse> getById(@RequestBody GetCaseByIdRequest request) {
         CaseResponse response = caseApplicationService.getById(request.caseId());
@@ -67,6 +70,7 @@ public class CaseController {
      *
      * @return ResponseEntity con status 200 y la lista de casos pendientes
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
     @GetMapping("/pending")
     public ResponseEntity<List<CaseResponse>> listPending() {
         List<CaseResponse> response = caseApplicationService.listPending();
@@ -79,6 +83,7 @@ public class CaseController {
      * @param request DTO con el ID del caso y el nombre del asesor
      * @return ResponseEntity con status 200 y el caso actualizado
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
     @PostMapping("/assign-advisor")
     public ResponseEntity<CaseResponse> assignAdvisor(@RequestBody AssignAdvisorByCaseRequest request) {
         CaseResponse response = caseApplicationService.assignAdvisor(
@@ -100,6 +105,7 @@ public class CaseController {
      * @param request DTO con el ID del caso y la fecha de la próxima acción
      * @return ResponseEntity con status 200 y el caso actualizado
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
     @PostMapping("/schedule-action")
     public ResponseEntity<CaseResponse> scheduleAction(@RequestBody ScheduleActionByCaseRequest request) {
         CaseResponse response = caseApplicationService.scheduleAction(
@@ -109,6 +115,7 @@ public class CaseController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
     @PostMapping("/transition-status")
     public ResponseEntity<CaseResponse> transitionStatus(@RequestBody TransitionCaseStatusRequest request) {
         CaseResponse response = caseApplicationService.transitionStatus(request.caseId(), request);
@@ -121,6 +128,7 @@ public class CaseController {
      * @param request DTO con el ID del caso a cerrar
      * @return ResponseEntity con status 200 y el caso cerrado
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     @PostMapping("/close")
     public ResponseEntity<CaseResponse> closeCase(@RequestBody CloseCaseRequest request) {
         CaseResponse response = caseApplicationService.closeCase(request.caseId());

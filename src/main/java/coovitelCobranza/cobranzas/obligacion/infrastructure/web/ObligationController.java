@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,24 +30,28 @@ public class ObligationController {
         this.obligationApplicationService = obligationApplicationService;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/id")
     @Operation(summary = "Get obligation by id")
     public ResponseEntity<ObligationResponse> getById(@RequestBody GetObligationByIdRequest request) {
         return ResponseEntity.ok(obligationApplicationService.getById(request.obligationId()));
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/number")
     @Operation(summary = "Get obligation by number")
     public ResponseEntity<ObligationResponse> getByNumber(@RequestBody GetObligationByNumberRequest request) {
         return ResponseEntity.ok(obligationApplicationService.getByNumber(request.obligationNumber()));
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/client")
     @Operation(summary = "List obligations by client")
     public ResponseEntity<List<ObligationResponse>> listByClient(@RequestBody ListObligationsByClientRequest request) {
         return ResponseEntity.ok(obligationApplicationService.listByCustomer(request.clientId()));
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     @PostMapping("/update/delinquency")
     @Operation(summary = "Register or update obligation delinquency")
     public ResponseEntity<ObligationResponse> registerDelinquency(@Valid @RequestBody RegisterDelinquencyRequest request) {
@@ -57,6 +62,7 @@ public class ObligationController {
         ));
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     @PostMapping("/apply-payment")
     @Operation(summary = "Apply payment to obligation")
     public ResponseEntity<ObligationResponse> applyPayment(@Valid @RequestBody ApplyObligationPaymentRequest request) {

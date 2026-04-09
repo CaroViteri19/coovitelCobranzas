@@ -11,6 +11,7 @@ import coovitelCobranza.cobranzas.interaccion.application.dto.CreateInteractionR
 import coovitelCobranza.cobranzas.interaccion.application.dto.InteractionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,24 +27,28 @@ public class InteractionController {
         this.interactionApplicationService = interactionApplicationService;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
     @PostMapping
     public ResponseEntity<InteractionResponse> create(@RequestBody CreateInteractionRequest request) {
         InteractionResponse response = interactionApplicationService.createInteraction(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/search/id")
     public ResponseEntity<InteractionResponse> getById(@RequestBody GetInteractionByIdRequest request) {
         InteractionResponse response = interactionApplicationService.getById(request.interactionId());
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/search/case")
     public ResponseEntity<List<InteractionResponse>> listByCase(@RequestBody ListInteractionsByCaseRequest request) {
         List<InteractionResponse> response = interactionApplicationService.listByCase(request.caseId());
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
     @PostMapping("/update-result")
     public ResponseEntity<InteractionResponse> updateResult(@RequestBody UpdateInteractionResultRequest request) {
         InteractionResponse response = interactionApplicationService.updateResult(

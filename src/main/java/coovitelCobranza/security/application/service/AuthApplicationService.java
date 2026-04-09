@@ -301,6 +301,19 @@ public class AuthApplicationService {
     }
 
     /**
+     * Devuelve la lista de todos los roles disponibles en el sistema.
+     * Usado por el frontend para poblar el selector de rol al crear usuarios.
+     *
+     * @return Lista de roles con su ID, nombre y descripción.
+     */
+    @Transactional(readOnly = true)
+    public List<RoleResponse> getRoles() {
+        return roleRepository.findAll().stream()
+                .map(r -> new RoleResponse(r.getId(), r.getName(), r.getDescription()))
+                .toList();
+    }
+
+    /**
      * Divide el nombre completo en primer nombre y apellidos.
      *
      * @param fullName Nombre completo a dividir.

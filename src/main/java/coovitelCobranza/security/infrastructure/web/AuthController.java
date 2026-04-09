@@ -5,10 +5,10 @@ import coovitelCobranza.security.application.service.AuthApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Controlador REST para operaciones de autenticación y registro de usuarios.
@@ -54,15 +54,29 @@ public class AuthController {
 
     /**
      * Asigna nuevos roles a un usuario existente.
+     * Solo accesible por usuarios con rol ADMINISTRADOR.
      *
      * @param request Solicitud con el ID del usuario y los roles a asignar.
      * @return Respuesta con mensaje de confirmación.
      */
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @PostMapping("/role")
     public ResponseEntity<String> assignRole(@Valid @RequestBody UpdateRoleRequest request) {
         return ResponseEntity.ok(authApplicationService.assignRole(request));
     }
 
+    /**
+     * Devuelve la lista de roles disponibles en el sistema.
+     * Usado por el frontend para poblar el selector de rol al crear usuarios.
+     * Solo accesible por usuarios con rol ADMINISTRADOR.
+     *
+     * @return Lista de roles con ID, nombre y descripción.
+     */
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @GetMapping("/roles")
+    public ResponseEntity<List<RoleResponse>> getRoles() {
+        return ResponseEntity.ok(authApplicationService.getRoles());
+    }
 
 }
 

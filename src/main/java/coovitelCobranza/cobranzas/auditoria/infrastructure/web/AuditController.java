@@ -6,6 +6,7 @@ import coovitelCobranza.cobranzas.auditoria.application.dto.RegisterAuditRequest
 import coovitelCobranza.cobranzas.auditoria.application.service.AuditApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public class AuditController {
      * @param request the audit event to register
      * @return 201 Created
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     @PostMapping("/events")
     public ResponseEntity<Void> registerEvent(@RequestBody RegisterAuditRequest request) {
         service.register(request);
@@ -45,6 +47,7 @@ public class AuditController {
      * @param request contains entityType and entityId in encrypted body
      * @return list of audit events
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/events/search")
     public ResponseEntity<List<AuditEventResponse>> listByEntity(@RequestBody ListAuditEventsByEntityRequest request) {
         return ResponseEntity.ok(service.listByEntity(request.entityType(), request.entityId()));

@@ -23,9 +23,12 @@ public class AuditServiceImpl implements AuditService {
                               String source,
                               String details,
                               String correlationId) {
+        // 0L como centinela cuando no hay entidad conocida (ej: login fallido de usuario inexistente)
+        Long safeEntityId = entityId != null ? entityId : 0L;
+
         AuditEvent event = AuditEvent.create(
                 entity,
-                entityId,
+                safeEntityId,
                 action,
                 user,
                 userRole,

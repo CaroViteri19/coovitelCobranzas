@@ -20,6 +20,6 @@ public record RegisterUserResponse(
         String email,
         List<String> roles,
         boolean enabled
-) {
+) {     
 }
 

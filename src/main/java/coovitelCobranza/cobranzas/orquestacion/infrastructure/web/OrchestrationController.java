@@ -7,6 +7,7 @@ import coovitelCobranza.cobranzas.orquestacion.application.dto.OrchestrationExec
 import coovitelCobranza.cobranzas.orquestacion.application.service.OrchestrationApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,16 +23,19 @@ public class OrchestrationController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     @PostMapping("/send")
     public ResponseEntity<OrchestrationExecutionResponse> send(@RequestBody SendOrchestrationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.send(request));
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/id")
     public ResponseEntity<OrchestrationExecutionResponse> getById(@RequestBody GetOrchestrationByIdRequest request) {
         return ResponseEntity.ok(service.getById(request.executionId()));
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/case")
     public ResponseEntity<List<OrchestrationExecutionResponse>> listByCase(@RequestBody ListOrchestrationByCaseRequest request) {
         return ResponseEntity.ok(service.listByCase(request.caseId()));

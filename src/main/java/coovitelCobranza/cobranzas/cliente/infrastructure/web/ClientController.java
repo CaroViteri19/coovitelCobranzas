@@ -11,6 +11,7 @@ import coovitelCobranza.cobranzas.cliente.application.dto.UpdateClientContactReq
 import coovitelCobranza.cobranzas.cliente.application.service.ClientApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -39,6 +40,7 @@ public class ClientController {
      * @param request datos del cliente a crear
      * @return ResponseEntity con status 201 y datos del cliente creado
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
     @PostMapping
     public ResponseEntity<ClientResponse> create(@RequestBody CreateClientRequest request) {
         ClientResponse response = clienteApplicationService.create(request);
@@ -51,6 +53,7 @@ public class ClientController {
      * @param request solicitud con el ID del cliente
      * @return ResponseEntity con status 200 y datos del cliente
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/search/id")
     public ResponseEntity<ClientResponse> getById(@RequestBody GetClientByIdRequest request) {
         ClientResponse response = clienteApplicationService.getById(request.clientId());
@@ -63,6 +66,7 @@ public class ClientController {
      * @param request solicitud con tipo y número de documento
      * @return ResponseEntity con status 200 y datos del cliente
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/search/document")
     public ResponseEntity<ClientResponse> getByDocument(@RequestBody GetClientByDocumentRequest request) {
         ClientResponse response = clienteApplicationService.getByDocument(
@@ -78,6 +82,7 @@ public class ClientController {
      * @param request datos de contacto a actualizar
      * @return ResponseEntity con status 200 y datos del cliente actualizado
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
     @PostMapping("/update/contact")
     public ResponseEntity<ClientResponse> updateContact(@RequestBody UpdateClientContactRequest request) {
         ClientResponse response = clienteApplicationService.updateContact(
@@ -93,6 +98,7 @@ public class ClientController {
      * @param request consentimientos a actualizar
      * @return ResponseEntity con status 200 y datos del cliente actualizado
      */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
     @PostMapping("/update/consents")
     public ResponseEntity<ClientResponse> updateConsents(@RequestBody UpdateClientConsentsRequest request) {
         ClientResponse response = clienteApplicationService.updateConsents(
