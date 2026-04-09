@@ -47,7 +47,7 @@ public class AuditController {
      */
     @PostMapping("/events/search")
     public ResponseEntity<List<AuditEventResponse>> listByEntity(@RequestBody ListAuditEventsByEntityRequest request) {
-        return ResponseEntity.ok(service.listarPorEntidad(request.entityType(), request.entityId()));
+        return ResponseEntity.ok(service.listByEntity(request.entityType(), request.entityId()));
     }
 }
 

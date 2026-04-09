@@ -55,7 +55,7 @@ public class CaseRepositoryImpl implements CaseRepository {
                 entity.getId(),
                 entity.getObligationId(),
                 Case.Priority.valueOf(entity.getPriority()),
-                Case.Status.valueOf(entity.getStatus()),
+                Case.statusFromPersistence(entity.getStatus()),
                 entity.getAssignedAdvisor(),
                 entity.getNextActionAt(),
                 entity.getUpdatedAt()

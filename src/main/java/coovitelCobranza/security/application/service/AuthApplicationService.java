@@ -1,5 +1,6 @@
 package coovitelCobranza.security.application.service;
 
+import coovitelCobranza.cobranzas.auditoria.domain.service.AuditService;
 import coovitelCobranza.security.application.dto.*;
 import coovitelCobranza.security.application.exception.InvalidCredentialsException;
 import coovitelCobranza.security.application.exception.UserAlreadyExistsException;
@@ -38,29 +39,56 @@ public class AuthApplicationService {
     private final UserJpaRepository userRepository;
     private final RoleJpaRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditService auditService;
 
     public AuthApplicationService(AuthenticationManager authenticationManager,
                                   JwtEncoder jwtEncoder,
                                   JwtProperties jwtProperties,
                                   UserJpaRepository userRepository,
                                   RoleJpaRepository roleRepository,
-                                  PasswordEncoder passwordEncoder) {
+                                  PasswordEncoder passwordEncoder,
+                                  AuditService auditService) {
         this.authenticationManager = authenticationManager;
         this.jwtEncoder = jwtEncoder;
         this.jwtProperties = jwtProperties;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditService = auditService;
     }
 
     @Transactional
     public RegisterUserResponse register(RegisterUserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
+            // Log failed registration attempt - username already exists
+            auditService.registerEvent(
+                    "SECURITY",
+                    "USER",
+                    null,
+                    "REGISTRATION_FAILED",
+                    request.username(),
+                    "ANONYMOUS",
+                    "API",
+                    "Registration failed: Username already exists",
+                    null
+            );
             throw new UserAlreadyExistsException("Username already exists");
         }
 
         String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmail(normalizedEmail)) {
+            // Log failed registration attempt - email already exists
+            auditService.registerEvent(
+                    "SECURITY",
+                    "USER",
+                    null,
+                    "REGISTRATION_FAILED",
+                    request.username(),
+                    "ANONYMOUS",
+                    "API",
+                    "Registration failed: Email already exists",
+                    null
+            );
             throw new UserAlreadyExistsException("Email already exists");
         }
 
@@ -81,6 +109,18 @@ public class AuthApplicationService {
         if (request.password().matches("^(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{12,}$")) {
             user.setPassword(passwordEncoder.encode(request.password()));
         } else {
+            // Log failed registration attempt - invalid password
+            auditService.registerEvent(
+                    "SECURITY",
+                    "USER",
+                    null,
+                    "REGISTRATION_FAILED",
+                    request.username(),
+                    "ANONYMOUS",
+                    "API",
+                    "Registration failed: Password does not meet complexity requirements",
+                    null
+            );
             throw new IllegalArgumentException("Password must be at least 12 characters long and contain at least one special character");
         }
 
@@ -98,6 +138,19 @@ public class AuthApplicationService {
         UserJpaEntity savedUser = userRepository.save(user);
         List<String> roles = savedUser.getRoles().stream().map(RoleJpaEntity::getName).toList();
 
+        // Log successful registration
+        auditService.registerEvent(
+                "SECURITY",
+                "USER",
+                savedUser.getId(),
+                "REGISTRATION_SUCCESS",
+                savedUser.getUsername(),
+                "USER",
+                "API",
+                "User registered successfully with roles: " + roles,
+                null
+        );
+
         return new RegisterUserResponse(
                 savedUser.getId(),
                 savedUser.getUsername(),
@@ -109,7 +162,21 @@ public class AuthApplicationService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        UserJpaEntity user = userRepository.findByUsername(request.username()).orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
+        UserJpaEntity user = userRepository.findByUsername(request.username()).orElseThrow(() -> {
+            // Log failed login attempt - user not found
+            auditService.registerEvent(
+                    "SECURITY",
+                    "USER",
+                    null,
+                    "LOGIN_FAILED",
+                    request.username(),
+                    "ANONYMOUS",
+                    "API",
+                    "Login failed: User not found",
+                    null
+            );
+            return new InvalidCredentialsException("Invalid username or password");
+        });
         try {
             if (!user.isLocked()) {
 
@@ -134,18 +201,69 @@ public class AuthApplicationService {
                 JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).type("JWT").build();
                 String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
                 user.setLocked(false);
+                user.setFailedAttemps(0);  // Reset failed attempts on successful login
+                userRepository.save(user);
+
+                // Log successful login
+                auditService.registerEvent(
+                        "SECURITY",
+                        "USER",
+                        user.getId(),
+                        "LOGIN_SUCCESS",
+                        user.getUsername(),
+                        roles.isEmpty() ? "USER" : roles.get(0),
+                        "API",
+                        "User logged in successfully. Roles: " + roles,
+                        null
+                );
+
                 return new LoginResponse(token, "Bearer", authentication.getName(), roles, expiresAt);
             } else {
                 //Si el usuario esta bloqueado lanza una excepcion de credenciales invalidas sin intentar autenticar para evitar ataques de fuerza bruta
+                auditService.registerEvent(
+                        "SECURITY",
+                        "USER",
+                        user.getId(),
+                        "LOGIN_FAILED",
+                        request.username(),
+                        "ANONYMOUS",
+                        "API",
+                        "Login failed: Account is locked",
+                        null
+                );
                 throw new InvalidCredentialsException("Account is locked");
             }
         } catch (AuthenticationException ex) {
             // Si las credenciales son incorrectas agrega intentos fallidos
             int count = user.getFailedAttemps();
             user.setFailedAttemps(count+1);
+
             //Si los intentos fallidos son superiores a 3 intentos bloquea el usuario
             if (user.getFailedAttemps()>=3){
                 user.setLocked(true);
+                auditService.registerEvent(
+                        "SECURITY",
+                        "USER",
+                        user.getId(),
+                        "LOGIN_FAILED_ACCOUNT_LOCKED",
+                        request.username(),
+                        "ANONYMOUS",
+                        "API",
+                        "Account locked after " + user.getFailedAttemps() + " failed login attempts",
+                        null
+                );
+            } else {
+                auditService.registerEvent(
+                        "SECURITY",
+                        "USER",
+                        user.getId(),
+                        "LOGIN_FAILED",
+                        request.username(),
+                        "ANONYMOUS",
+                        "API",
+                        "Login failed: Invalid credentials. Failed attempts: " + user.getFailedAttemps(),
+                        null
+                );
             }
             userRepository.save(user);
             throw new InvalidCredentialsException("Invalid username or password");
@@ -166,11 +284,29 @@ public class AuthApplicationService {
 
     @Transactional
     public String assignRole(UpdateRoleRequest  request) {
-        UserJpaEntity user = userRepository.findById(request.getIdUser()).orElseThrow(() -> new RuntimeException("User not found"));
-        List<RoleJpaEntity> roles = roleRepository.findAllById(request.getRole());
+        UserJpaEntity user = userRepository.findById(request.idUser()).orElseThrow(() -> new RuntimeException("User not found"));
+        List<RoleJpaEntity> roles = roleRepository.findAllById(request.role());
+
+        String oldRoles = user.getRoles().stream().map(RoleJpaEntity::getName).toList().toString();
+        String newRoles = roles.stream().map(RoleJpaEntity::getName).toList().toString();
+
         user.setRoles(new LinkedHashSet<>(roles));
         // System.out.println("user: " + user + " roles: " + user.getRoles());
         userRepository.save(user);
+
+        // Log role assignment
+        auditService.registerEvent(
+                "SECURITY",
+                "USER",
+                user.getId(),
+                "ROLE_ASSIGNED",
+                user.getUsername(),
+                "ADMIN",
+                "API",
+                "Roles changed from " + oldRoles + " to " + newRoles,
+                null
+        );
+
         return "User" + user.getFullName() + " updated with roles "; //+ roles.stream().map(RoleJpaEntity::getName).toList();
     }
 }

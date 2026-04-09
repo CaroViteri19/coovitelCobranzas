@@ -16,12 +16,16 @@ public class InteractionResultActualizadoEventListener {
 
     @EventListener
     public void handle(InteractionResultActualizadoEvent event) {
-        auditoriaService.registrarEvent(
-                "INTERACCION",
+        auditoriaService.registerEvent(
+                "ORCHESTRATION",
+                "INTERACTION",
                 event.interactionId(),
-                "RESULTADO_ACTUALIZADO",
-                "sistema",
-                "Result actualizado a " + event.resultado() + " para caso " + event.casoGestionId()
+                "INTERACTION_RESULT_UPDATED",
+                "system",
+                "SYSTEM",
+                "EVENT",
+                "Result updated to " + event.resultado() + " for case " + event.casoGestionId(),
+                event.eventName() + "-" + event.interactionId()
         );
     }
 }

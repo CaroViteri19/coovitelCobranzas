@@ -26,12 +26,16 @@ public class AuditApplicationService {
     @Transactional
     public void register(RegisterAuditRequest request) {
         try {
-            auditService.registrarEvent(
+            auditService.registerEvent(
+                    request.module() != null ? request.module() : "GENERAL",
                     request.entityType(),
                     request.entityId(),
                     request.action(),
                     request.user(),
-                    request.details()
+                    request.userRole(),
+                    request.source() != null ? request.source() : "SYSTEM",
+                    request.details(),
+                    request.correlationId()
             );
         } catch (Exception e) {
             throw new AuditBusinessException("Error registering audit event", e);

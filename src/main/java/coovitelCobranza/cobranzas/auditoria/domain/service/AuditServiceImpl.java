@@ -14,9 +14,26 @@ public class AuditServiceImpl implements AuditService {
     }
 
     @Override
-    public void registrarEvent(String entity, Long entityId, String action, String user, String detail) {
-        AuditEvent evento = AuditEvent.crear(entity, entityId, action, user, detail);
-        repository.save(evento);
+    public void registerEvent(String module,
+                              String entity,
+                              Long entityId,
+                              String action,
+                              String user,
+                              String userRole,
+                              String source,
+                              String details,
+                              String correlationId) {
+        AuditEvent event = AuditEvent.create(
+                entity,
+                entityId,
+                action,
+                user,
+                userRole,
+                source,
+                module,
+                correlationId,
+                details
+        );
+        repository.save(event);
     }
 }
-

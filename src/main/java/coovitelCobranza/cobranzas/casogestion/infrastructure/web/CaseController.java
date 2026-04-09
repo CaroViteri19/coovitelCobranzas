@@ -1,13 +1,14 @@
 package coovitelCobranza.cobranzas.casogestion.infrastructure.web;
 
 import coovitelCobranza.cobranzas.casogestion.application.dto.AssignAdvisorByCaseRequest;
+import coovitelCobranza.cobranzas.casogestion.application.dto.AssignAdvisorRequest;
 import coovitelCobranza.cobranzas.casogestion.application.dto.CaseResponse;
 import coovitelCobranza.cobranzas.casogestion.application.dto.CloseCaseRequest;
 import coovitelCobranza.cobranzas.casogestion.application.dto.CreateCaseRequest;
 import coovitelCobranza.cobranzas.casogestion.application.dto.GetCaseByIdRequest;
 import coovitelCobranza.cobranzas.casogestion.application.dto.ScheduleActionByCaseRequest;
-import coovitelCobranza.cobranzas.casogestion.application.dto.AssignAdvisorRequest;
 import coovitelCobranza.cobranzas.casogestion.application.dto.ScheduleActionRequest;
+import coovitelCobranza.cobranzas.casogestion.application.dto.TransitionCaseStatusRequest;
 import coovitelCobranza.cobranzas.casogestion.application.service.CaseApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,13 @@ public class CaseController {
     public ResponseEntity<CaseResponse> assignAdvisor(@RequestBody AssignAdvisorByCaseRequest request) {
         CaseResponse response = caseApplicationService.assignAdvisor(
                 request.caseId(),
-                new AssignAdvisorRequest(request.advisor())
+                new AssignAdvisorRequest(
+                        request.advisor(),
+                        request.performedBy(),
+                        request.performedByRole(),
+                        request.assignmentSource(),
+                        request.correlationId()
+                )
         );
         return ResponseEntity.ok(response);
     }
@@ -62,10 +69,15 @@ public class CaseController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/transition-status")
+    public ResponseEntity<CaseResponse> transitionStatus(@RequestBody TransitionCaseStatusRequest request) {
+        CaseResponse response = caseApplicationService.transitionStatus(request.caseId(), request);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/close")
     public ResponseEntity<CaseResponse> closeCase(@RequestBody CloseCaseRequest request) {
         CaseResponse response = caseApplicationService.closeCase(request.caseId());
         return ResponseEntity.ok(response);
     }
 }
-

@@ -6,10 +6,14 @@ import java.time.LocalDateTime;
 
 public record AuditEventResponse(
         Long id,
+        String module,
         String entityType,
         Long entityId,
         String action,
         String user,
+        String userRole,
+        String source,
+        String correlationId,
         String details,
         LocalDateTime createdAt
 ) {
@@ -17,13 +21,16 @@ public record AuditEventResponse(
     public static AuditEventResponse fromDomain(AuditEvent event) {
         return new AuditEventResponse(
                 event.getId(),
-                event.getEntidad(),
-                event.getEntidadId(),
+                event.getModule(),
+                event.getEntityType(),
+                event.getEntityId(),
                 event.getAction(),
-                event.getUsuario(),
-                event.getDetalle(),
+                event.getUser(),
+                event.getUserRole(),
+                event.getSource(),
+                event.getCorrelationId(),
+                event.getDetails(),
                 event.getCreatedAt()
         );
     }
 }
-

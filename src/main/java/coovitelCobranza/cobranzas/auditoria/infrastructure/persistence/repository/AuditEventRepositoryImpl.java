@@ -18,8 +18,8 @@ public class AuditEventRepositoryImpl implements AuditEventRepository {
     }
 
     @Override
-    public AuditEvent save(AuditEvent evento) {
-        AuditEventJpaEntity entity = toEntity(evento);
+    public AuditEvent save(AuditEvent event) {
+        AuditEventJpaEntity entity = toEntity(event);
         AuditEventJpaEntity saved = jpaRepository.save(entity);
         return toDomain(saved);
     }
@@ -31,28 +31,35 @@ public class AuditEventRepositoryImpl implements AuditEventRepository {
                 .toList();
     }
 
-    private AuditEventJpaEntity toEntity(AuditEvent evento) {
+    private AuditEventJpaEntity toEntity(AuditEvent event) {
         return new AuditEventJpaEntity(
-                evento.getId(),
-                evento.getEntidad(),
-                evento.getEntidadId(),
-                evento.getAction(),
-                evento.getUsuario(),
-                evento.getDetalle(),
-                evento.getCreatedAt()
+                event.getId(),
+                event.getEntityType(),
+                event.getEntityId(),
+                event.getAction(),
+                event.getUser(),
+                event.getUserRole(),
+                event.getSource(),
+                event.getModule(),
+                event.getCorrelationId(),
+                event.getDetails(),
+                event.getCreatedAt()
         );
     }
 
     private AuditEvent toDomain(AuditEventJpaEntity entity) {
         return AuditEvent.reconstruct(
                 entity.getId(),
-                entity.getEntidad(),
-                entity.getEntidadId(),
+                entity.getEntity(),
+                entity.getEntityId(),
                 entity.getAction(),
-                entity.getUsuario(),
-                entity.getDetalle(),
+                entity.getUser(),
+                entity.getUserRole(),
+                entity.getSource(),
+                entity.getModule(),
+                entity.getCorrelationId(),
+                entity.getDetail(),
                 entity.getCreatedAt()
         );
     }
 }
-

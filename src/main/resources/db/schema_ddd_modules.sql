@@ -158,11 +158,35 @@ CREATE TABLE `auditoria_eventos` (
   `entidad_id` BIGINT NOT NULL,
   `accion` VARCHAR(80) NOT NULL,
   `usuario` VARCHAR(80) NOT NULL,
-  `detalle` VARCHAR(500),
+  `rol_usuario` VARCHAR(80),
+  `origen` VARCHAR(30) DEFAULT 'SYSTEM',
+  `modulo` VARCHAR(50) DEFAULT 'GENERAL',
+  `correlation_id` VARCHAR(100),
+  `detalle` VARCHAR(1000),
   `created_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `idx_auditoria_entidad` (`entidad`, `entidad_id`),
-  INDEX `idx_auditoria_created` (`created_at`)
+  INDEX `idx_auditoria_created` (`created_at`),
+  INDEX `idx_auditoria_modulo_accion` (`modulo`, `accion`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ==========================================
+-- Table: case_assignment_trace (Case assignment trace)
+-- ==========================================
+DROP TABLE IF EXISTS `case_assignment_trace`;
+CREATE TABLE `case_assignment_trace` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `case_id` BIGINT NOT NULL,
+  `advisor` VARCHAR(100) NOT NULL,
+  `assignment_source` VARCHAR(30) NOT NULL,
+  `performed_by` VARCHAR(80),
+  `performed_by_role` VARCHAR(80),
+  `correlation_id` VARCHAR(100),
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_assignment_trace_case` (`case_id`),
+  CONSTRAINT `fk_assignment_trace_case`
+    FOREIGN KEY (`case_id`) REFERENCES `casos_gestion`(`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
@@ -186,6 +210,25 @@ CREATE INDEX idx_politicas_tipo_rango ON politicas(tipo_cobro, dias_mora_minimo,
 
 -- Índices para búsquedas frecuentes de auditoría
 CREATE INDEX idx_auditoria_usuario_accion ON auditoria_eventos(usuario, accion);
+
+-- Prevent deletion of case statuses that are already referenced by managed cases.
+DROP TRIGGER IF EXISTS `trg_case_statuses_before_delete`;
+DELIMITER $$
+CREATE TRIGGER `trg_case_statuses_before_delete`
+BEFORE DELETE ON `case_statuses`
+FOR EACH ROW
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM `casos_gestion`
+    WHERE `estado` = OLD.`code`
+    LIMIT 1
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Cannot delete case status with existing case history';
+  END IF;
+END$$
+DELIMITER ;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

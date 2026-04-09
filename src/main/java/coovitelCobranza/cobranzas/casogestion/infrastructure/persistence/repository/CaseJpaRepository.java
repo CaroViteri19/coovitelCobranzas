@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface CaseJpaRepository extends JpaRepository<CaseJpaEntity, Long> {
 
-    @Query("SELECT c FROM CaseJpaEntity c WHERE c.estado IN ('ABIERTO', 'EN_GESTION')")
+    @Query("SELECT c FROM CaseJpaEntity c WHERE c.estado IN ('NEW', 'IN_MANAGEMENT', 'ABIERTO', 'EN_GESTION')")
     List<CaseJpaEntity> findPendientes();
 }
 

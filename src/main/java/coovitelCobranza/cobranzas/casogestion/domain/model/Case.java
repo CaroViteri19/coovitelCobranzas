@@ -1,7 +1,9 @@
 package coovitelCobranza.cobranzas.casogestion.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * 📋 MODELO DE CASO DE GESTIÓN (VERSIÓN EN INGLÉS)
@@ -42,6 +44,16 @@ import java.util.Objects;
  */
 public class Case {
 
+    private static final Map<Status, Set<Status>> ALLOWED_TRANSITIONS = Map.of(
+            Status.NEW, Set.of(Status.IN_MANAGEMENT, Status.UNREACHABLE),
+            Status.IN_MANAGEMENT, Set.of(Status.PAYMENT_PROMISE, Status.UNREACHABLE, Status.PRE_LEGAL),
+            Status.UNREACHABLE, Set.of(Status.IN_MANAGEMENT, Status.PRE_LEGAL),
+            Status.PAYMENT_PROMISE, Set.of(Status.CLOSED, Status.IN_MANAGEMENT),
+            Status.PRE_LEGAL, Set.of(Status.CLOSED, Status.JUDICIAL_COLLECTION),
+            Status.JUDICIAL_COLLECTION, Set.of(Status.CLOSED),
+            Status.CLOSED, Set.of()
+    );
+
     private final Long id;
     private final Long obligationId;
     private Priority priority;
@@ -73,7 +85,7 @@ public class Case {
      * @return a new Case aggregate
      */
     public static Case create(Long obligationId, Priority priority) {
-        return new Case(null, obligationId, priority, Status.OPEN, null, null);
+        return new Case(null, obligationId, priority, Status.NEW, null, null);
     }
 
     public static Case crear(Long obligationId, Priority priority) {
@@ -105,17 +117,47 @@ public class Case {
     }
 
     /**
+     * Convert status from persistence layer to internal enum.
+     *
+     * @param value the status value from persistence
+     * @return the corresponding Status enum
+     * @throws IllegalArgumentException if value is null or blank
+     */
+    public static Status statusFromPersistence(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Status is required");
+        }
+        return switch (value) {
+            case "OPEN", "ABIERTO", "NUEVO" -> Status.NEW;
+            case "EN_GESTION" -> Status.IN_MANAGEMENT;
+            case "PAUSED", "ILOCALIZADO", "ILOCALIZADO_SIN_RESPUESTA" -> Status.UNREACHABLE;
+            case "PROMESA_PAGO" -> Status.PAYMENT_PROMISE;
+            case "PREJURIDICO" -> Status.PRE_LEGAL;
+            case "COBRO_JUDICIAL" -> Status.JUDICIAL_COLLECTION;
+            case "CERRADO" -> Status.CLOSED;
+            default -> Status.valueOf(value);
+        };
+    }
+
+    /**
      * Assign an advisor to this case and transition to IN_MANAGEMENT status.
      *
      * @param advisor the name or ID of the advisor
      * @throws IllegalArgumentException if advisor is null or blank
+     * @throws IllegalStateException    if the case is closed
      */
     public void assignAdvisor(String advisor) {
         if (advisor == null || advisor.isBlank()) {
             throw new IllegalArgumentException("Advisor is required");
         }
+        if (this.status == Status.CLOSED) {
+            throw new IllegalStateException("Cannot assign advisor to a closed case");
+        }
         this.assignedAdvisor = advisor;
-        this.status = Status.IN_MANAGEMENT;
+        if (this.status != Status.IN_MANAGEMENT) {
+            transitionTo(Status.IN_MANAGEMENT, "ASSIGN_ADVISOR");
+            return;
+        }
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -128,8 +170,12 @@ public class Case {
      *
      * @param dateTime the datetime of the next action
      * @throws IllegalArgumentException if dateTime is null
+     * @throws IllegalStateException    if the case is closed
      */
     public void scheduleNextAction(LocalDateTime dateTime) {
+        if (this.status == Status.CLOSED) {
+            throw new IllegalStateException("Cannot schedule action for a closed case");
+        }
         this.nextActionAt = Objects.requireNonNull(dateTime, "dateTime is required");
         this.updatedAt = LocalDateTime.now();
     }
@@ -139,11 +185,42 @@ public class Case {
     }
 
     /**
+     * Transition the case to a new status if the transition is allowed.
+     *
+     * @param targetStatus the status to transition to
+     * @param reason       the reason for the transition (for auditing)
+     * @throws IllegalArgumentException if targetStatus is null
+     * @throws IllegalStateException    if the transition is not allowed
+     */
+    public void transitionTo(Status targetStatus, String reason) {
+        Objects.requireNonNull(targetStatus, "targetStatus is required");
+        if (!canTransitionTo(targetStatus)) {
+            throw new IllegalStateException("Invalid transition from " + status + " to " + targetStatus);
+        }
+        this.status = targetStatus;
+        if (targetStatus == Status.CLOSED) {
+            this.nextActionAt = null;
+        }
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Check if the case can transition to the given status.
+     *
+     * @param targetStatus the status to check
+     * @return true if the transition is allowed, false otherwise
+     */
+    public boolean canTransitionTo(Status targetStatus) {
+        return ALLOWED_TRANSITIONS.getOrDefault(this.status, Set.of()).contains(targetStatus);
+    }
+
+    /**
      * Close this case.
      */
     public void close() {
-        this.status = Status.CLOSED;
-        this.updatedAt = LocalDateTime.now();
+        if (this.status != Status.CLOSED) {
+            transitionTo(Status.CLOSED, "MANUAL_CLOSE");
+        }
     }
 
     public void cerrar() {
@@ -209,9 +286,12 @@ public class Case {
      * Case statuses throughout its lifecycle.
      */
     public enum Status {
-        OPEN,
+        NEW,
         IN_MANAGEMENT,
-        PAUSED,
+        UNREACHABLE,
+        PAYMENT_PROMISE,
+        PRE_LEGAL,
+        JUDICIAL_COLLECTION,
         CLOSED
     }
 }

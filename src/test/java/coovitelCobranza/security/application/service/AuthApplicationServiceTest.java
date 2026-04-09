@@ -1,5 +1,6 @@
 package coovitelCobranza.security.application.service;
 
+import coovitelCobranza.cobranzas.auditoria.domain.service.AuditService;
 import coovitelCobranza.security.application.dto.RegisterUserRequest;
 import coovitelCobranza.security.application.dto.RegisterUserResponse;
 import coovitelCobranza.security.application.exception.UserAlreadyExistsException;
@@ -47,6 +48,9 @@ class AuthApplicationServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private AuditService auditService;
+
     private AuthApplicationService service;
 
     @BeforeEach
@@ -62,7 +66,8 @@ class AuthApplicationServiceTest {
                 jwtProperties,
                 userRepository,
                 roleRepository,
-                passwordEncoder
+                passwordEncoder,
+                auditService
         );
     }
 
@@ -71,7 +76,7 @@ class AuthApplicationServiceTest {
     void registerSuccess() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "newuser",
-                "Pass12345",
+                "Pass12345!@#",
                 "New User",
                 "new.user@test.com"
         );
@@ -81,7 +86,7 @@ class AuthApplicationServiceTest {
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail("new.user@test.com")).thenReturn(false);
         when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
-        when(passwordEncoder.encode("Pass12345")).thenReturn("encoded-password");
+        when(passwordEncoder.encode("Pass12345!@#")).thenReturn("encoded-password");
         when(userRepository.save(any(UserJpaEntity.class))).thenAnswer(invocation -> {
             UserJpaEntity user = invocation.getArgument(0);
             user.setId(10L);
@@ -102,7 +107,7 @@ class AuthApplicationServiceTest {
     void registerFailsOnDuplicateUsername() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "existing",
-                "Pass12345",
+                "Pass12345!@#",
                 "Existing User",
                 "existing@test.com"
         );
@@ -117,7 +122,7 @@ class AuthApplicationServiceTest {
     void registerCreatesDefaultRoleWhenMissing() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "another",
-                "Pass12345",
+                "Pass12345!@#",
                 "Another User",
                 "another@test.com"
         );
@@ -128,7 +133,7 @@ class AuthApplicationServiceTest {
         when(userRepository.existsByEmail("another@test.com")).thenReturn(false);
         when(roleRepository.findByName("USER")).thenReturn(Optional.empty());
         when(roleRepository.save(any(RoleJpaEntity.class))).thenReturn(createdRole);
-        when(passwordEncoder.encode("Pass12345")).thenReturn("encoded-password");
+        when(passwordEncoder.encode("Pass12345!@#")).thenReturn("encoded-password");
         when(userRepository.save(any(UserJpaEntity.class))).thenAnswer(invocation -> {
             UserJpaEntity user = invocation.getArgument(0);
             user.setId(11L);

@@ -12,34 +12,59 @@ public class AuditEventJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 80)
+    @Column(name = "entidad", nullable = false, length = 80)
     private String entity;
 
-    @Column(nullable = false)
+    @Column(name = "entidad_id", nullable = false)
     private Long entityId;
 
-    @Column(nullable = false, length = 80)
+    @Column(name = "accion", nullable = false, length = 80)
     private String action;
 
-    @Column(nullable = false, length = 80)
+    @Column(name = "usuario", nullable = false, length = 80)
     private String user;
 
-    @Column(length = 500)
+    @Column(name = "rol_usuario", length = 80)
+    private String userRole;
+
+    @Column(name = "origen", length = 30)
+    private String source;
+
+    @Column(name = "modulo", length = 50)
+    private String module;
+
+    @Column(name = "correlation_id", length = 100)
+    private String correlationId;
+
+    @Column(name = "detalle", length = 1000)
     private String detail;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     public AuditEventJpaEntity() {
     }
 
-    public AuditEventJpaEntity(Long id, String entity, Long entityId, String action,
-                                    String user, String detail, LocalDateTime createdAt) {
+    public AuditEventJpaEntity(Long id,
+                               String entity,
+                               Long entityId,
+                               String action,
+                               String user,
+                               String userRole,
+                               String source,
+                               String module,
+                               String correlationId,
+                               String detail,
+                               LocalDateTime createdAt) {
         this.id = id;
         this.entity = entity;
         this.entityId = entityId;
         this.action = action;
         this.user = user;
+        this.userRole = userRole;
+        this.source = source;
+        this.module = module;
+        this.correlationId = correlationId;
         this.detail = detail;
         this.createdAt = createdAt;
     }
@@ -52,16 +77,32 @@ public class AuditEventJpaEntity {
         this.id = id;
     }
 
+    public String getEntity() {
+        return entity;
+    }
+
     public String getEntidad() {
         return entity;
+    }
+
+    public void setEntity(String entity) {
+        this.entity = entity;
     }
 
     public void setEntidad(String entity) {
         this.entity = entity;
     }
 
+    public Long getEntityId() {
+        return entityId;
+    }
+
     public Long getEntidadId() {
         return entityId;
+    }
+
+    public void setEntityId(Long entityId) {
+        this.entityId = entityId;
     }
 
     public void setEntidadId(Long entityId) {
@@ -76,16 +117,64 @@ public class AuditEventJpaEntity {
         this.action = action;
     }
 
+    public String getUser() {
+        return user;
+    }
+
     public String getUsuario() {
         return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
 
     public void setUsuario(String user) {
         this.user = user;
     }
 
+    public String getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(String userRole) {
+        this.userRole = userRole;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
     public String getDetalle() {
         return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
     }
 
     public void setDetalle(String detail) {
@@ -100,4 +189,3 @@ public class AuditEventJpaEntity {
         this.createdAt = createdAt;
     }
 }
-

@@ -21,7 +21,7 @@ class CaseTest {
         assertNull(caso.getId());
         assertEquals(1L, caso.getObligationId());
         assertEquals(Case.Priority.HIGH, caso.getPriority());
-        assertEquals(Case.Status.OPEN, caso.getStatus());
+        assertEquals(Case.Status.NEW, caso.getStatus());
         assertNull(caso.getAssignedAdvisor());
         assertNull(caso.getNextActionAt());
     }
@@ -101,6 +101,8 @@ class CaseTest {
     void testCerrarCaso() {
         // Arrange
         Case caso = Case.crear(1L, Case.Priority.LOW);
+        caso.assignAdvisor("Agent 1");
+        caso.transitionTo(Case.Status.PAYMENT_PROMISE, "PROMISE_ACCEPTED");
 
         // Act
         caso.close();
@@ -122,10 +124,13 @@ class CaseTest {
     @Test
     @DisplayName("Available statuses")
     void testStatuss() {
-        assertEquals(4, Case.Status.values().length);
-        assertNotNull(Case.Status.OPEN);
+        assertEquals(7, Case.Status.values().length);
+        assertNotNull(Case.Status.NEW);
         assertNotNull(Case.Status.IN_MANAGEMENT);
-        assertNotNull(Case.Status.PAUSED);
+        assertNotNull(Case.Status.UNREACHABLE);
+        assertNotNull(Case.Status.PAYMENT_PROMISE);
+        assertNotNull(Case.Status.PRE_LEGAL);
+        assertNotNull(Case.Status.JUDICIAL_COLLECTION);
         assertNotNull(Case.Status.CLOSED);
     }
 

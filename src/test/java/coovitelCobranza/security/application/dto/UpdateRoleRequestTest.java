@@ -22,8 +22,7 @@ class UpdateRoleRequestTest {
         UpdateRoleRequest request = new ObjectMapper().readValue(json, UpdateRoleRequest.class);
 
         assertNotNull(request);
-        assertEquals(2L, request.getIdUser());
-        assertEquals(List.of(1L, 2L, 3L, 4L), request.getRole());
+        assertEquals(2L, request.idUser());
+        assertEquals(List.of(1L, 2L, 3L, 4L), request.role());
     }
 }
-

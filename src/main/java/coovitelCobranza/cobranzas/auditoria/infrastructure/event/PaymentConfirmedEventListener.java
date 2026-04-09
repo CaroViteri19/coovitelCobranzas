@@ -16,12 +16,16 @@ public class PaymentConfirmedEventListener {
 
     @EventListener
     public void handle(PaymentConfirmedEvent event) {
-        auditoriaService.registrarEvent(
-                "PAGO",
+        auditoriaService.registerEvent(
+                "COLLECTION",
+                "PAYMENT",
                 event.pagoId(),
-                "CONFIRMADO",
-                "sistema",
-                "Payment confirmado por valor " + event.valor() + " para obligacion " + event.obligacionId()
+                "PAYMENT_CONFIRMED",
+                "system",
+                "SYSTEM",
+                "EVENT",
+                "Payment confirmed amount=" + event.valor() + " obligation=" + event.obligacionId(),
+                event.eventName() + "-" + event.pagoId()
         );
     }
 }

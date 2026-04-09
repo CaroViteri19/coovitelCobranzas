@@ -1,11 +1,13 @@
 package coovitelCobranza.cobranzas.casogestion.application.dto;
 
-public record AssignAdvisorByCaseRequest(
+public record TransitionCaseStatusRequest(
         Long caseId,
-        String advisor,
+        String targetStatus,
+        String reason,
         String performedBy,
         String performedByRole,
-        String assignmentSource,
+        String source,
         String correlationId
 ) {
 }
+
