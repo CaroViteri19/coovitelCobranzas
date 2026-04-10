@@ -34,6 +34,11 @@ public interface UserJpaRepository extends JpaRepository<UserJpaEntity, Long> {
      * @return true si el correo existe, false en caso contrario.
      */
     boolean existsByEmail(String email);
+
+    UserJpaRepository findByUsernameAndPassword(String username, String password);
+    Optional<UserJpaEntity> findByEmail(String email);
+
+
 }
 
 

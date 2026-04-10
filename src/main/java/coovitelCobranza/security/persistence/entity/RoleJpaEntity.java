@@ -1,14 +1,9 @@
 package coovitelCobranza.security.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -64,6 +59,9 @@ public class RoleJpaEntity {
         this.description = description;
         this.createdAt = createdAt;
     }
+
+    @OneToMany(mappedBy = "roles")
+    private List<UserJpaEntity> users;
 
     /**
      * Obtiene el identificador del rol.

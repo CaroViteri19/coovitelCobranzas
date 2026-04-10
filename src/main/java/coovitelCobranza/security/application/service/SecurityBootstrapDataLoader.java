@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
 
 /**
  * Cargador de datos de inicialización para seguridad.
@@ -75,8 +74,7 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
         adminUser.setLocked(false);
         adminUser.setCreatedAt(LocalDateTime.now());
         adminUser.setUpdatedAt(LocalDateTime.now());
-        adminUser.setRoles(new LinkedHashSet<>());
-        adminUser.addRole(adminRole);
+        adminUser.setRoles(adminRole);
         userRepository.save(adminUser);
     }
 

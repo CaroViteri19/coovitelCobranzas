@@ -21,7 +21,10 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -29,6 +32,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Servicio de aplicación para gestionar la autenticación y registro de usuarios.
@@ -36,6 +40,8 @@ import java.util.Locale;
  */
 @Service
 public class AuthApplicationService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthApplicationService.class);
 
     private final AuthenticationManager authenticationManager;
     private final JwtEncoder jwtEncoder;
@@ -82,46 +88,32 @@ public class AuthApplicationService {
     @Transactional
     public RegisterUserResponse register(RegisterUserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            // Log failed registration attempt - username already exists
-            auditService.registerEvent(
-                    "SECURITY",
-                    "USER",
+            safeRegisterEvent(
                     null,
-                    "REGISTRATION_FAILED",
                     request.username(),
+                    "REGISTRATION_FAILED",
                     "ANONYMOUS",
-                    "API",
-                    "Registration failed: Username already exists",
-                    null
+                    "Registration failed: Username already exists"
             );
             throw new UserAlreadyExistsException("Username already exists");
         }
 
         String normalizedEmail = request.email().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmail(normalizedEmail)) {
-            // Log failed registration attempt - email already exists
-            auditService.registerEvent(
-                    "SECURITY",
-                    "USER",
+            safeRegisterEvent(
                     null,
-                    "REGISTRATION_FAILED",
                     request.username(),
+                    "REGISTRATION_FAILED",
                     "ANONYMOUS",
-                    "API",
-                    "Registration failed: Email already exists",
-                    null
+                    "Registration failed: Email already exists"
             );
             throw new UserAlreadyExistsException("Email already exists");
         }
 
-        // Registration uses a default USER role so new accounts are created with minimum permissions.
-        RoleJpaEntity defaultRole = roleRepository.findByName("USER")
-                .orElseGet(() -> roleRepository.save(new RoleJpaEntity(
-                        null,
-                        "USER",
-                        "Default platform user role",
-                        LocalDateTime.now()
-                )));
+        RoleJpaEntity role = roleRepository.findById(request.role())
+                .orElseGet(() -> roleRepository.findByName("AGENTE")
+                        .or(() -> roleRepository.findByName("AGENT"))
+                        .orElseThrow(() -> new RuntimeException("Default role not found")));
 
         UserJpaEntity user = new UserJpaEntity();
         String[] nameParts = splitFullName(request.fullName().trim());
@@ -131,17 +123,12 @@ public class AuthApplicationService {
         if (request.password().matches("^(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{12,}$")) {
             user.setPassword(passwordEncoder.encode(request.password()));
         } else {
-            // Log failed registration attempt - invalid password
-            auditService.registerEvent(
-                    "SECURITY",
-                    "USER",
+            safeRegisterEvent(
                     null,
-                    "REGISTRATION_FAILED",
                     request.username(),
+                    "REGISTRATION_FAILED",
                     "ANONYMOUS",
-                    "API",
-                    "Registration failed: Password does not meet complexity requirements",
-                    null
+                    "Registration failed: Password does not meet complexity requirements"
             );
             throw new IllegalArgumentException("Password must be at least 12 characters long and contain at least one special character");
         }
@@ -154,23 +141,29 @@ public class AuthApplicationService {
         user.setLocked(false);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
-        user.setRoles(new LinkedHashSet<>());
-        user.addRole(defaultRole);
+        user.setRoles(role);
 
-        UserJpaEntity savedUser = userRepository.save(user);
-        List<String> roles = savedUser.getRoles().stream().map(RoleJpaEntity::getName).toList();
+        UserJpaEntity savedUser;
+        try {
+            savedUser = userRepository.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            safeRegisterEvent(
+                    null,
+                    request.username(),
+                    "REGISTRATION_FAILED",
+                    "ANONYMOUS",
+                    "Registration failed: data integrity violation (possible duplicate username/email)"
+            );
+            throw new UserAlreadyExistsException("Username or email already exists");
+        }
 
-        // Log successful registration
-        auditService.registerEvent(
-                "SECURITY",
-                "USER",
+        // Log successful registration, but never fail the registration if auditing fails.
+        safeRegisterEvent(
                 savedUser.getId(),
-                "REGISTRATION_SUCCESS",
                 savedUser.getUsername(),
+                "REGISTRATION_SUCCESS",
                 "USER",
-                "API",
-                "User registered successfully with roles: " + roles,
-                null
+                "User registered successfully with roles: " + role.getName()
         );
 
         return new RegisterUserResponse(
@@ -178,7 +171,7 @@ public class AuthApplicationService {
                 savedUser.getUsername(),
                 savedUser.getFullName(),
                 savedUser.getEmail(),
-                roles,
+                role.getName(),
                 savedUser.isEnabled()
         );
     }
@@ -192,26 +185,13 @@ public class AuthApplicationService {
      * @throws InvalidCredentialsException Si las credenciales son inválidas.
      */
     public LoginResponse login(LoginRequest request) {
-        UserJpaEntity user = userRepository.findByUsername(request.username()).orElseThrow(() -> {
-            // Log failed login attempt - user not found
-            auditService.registerEvent(
-                    "SECURITY",
-                    "USER",
-                    null,
-                    "LOGIN_FAILED",
-                    request.username(),
-                    "ANONYMOUS",
-                    "API",
-                    "Login failed: User not found",
-                    null
-            );
-            return new InvalidCredentialsException("Invalid username or password");
-        });
+        UserJpaEntity user = userRepository.findByEmail(request.email().trim())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
         try {
             if (!user.isLocked()) {
 
                 Authentication authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+                        new UsernamePasswordAuthenticationToken(request.email(), request.password()));
                 Instant issuedAt = Instant.now();
                 Instant expiresAt = issuedAt.plus(jwtProperties.getExpirationMinutes(), ChronoUnit.MINUTES);
                 List<String> roles = authentication.getAuthorities().stream()
@@ -255,7 +235,7 @@ public class AuthApplicationService {
                         "USER",
                         user.getId(),
                         "LOGIN_FAILED",
-                        request.username(),
+                        request.email(),
                         "ANONYMOUS",
                         "API",
                         "Login failed: Account is locked",
@@ -276,7 +256,7 @@ public class AuthApplicationService {
                         "USER",
                         user.getId(),
                         "LOGIN_FAILED_ACCOUNT_LOCKED",
-                        request.username(),
+                        request.email(),
                         "ANONYMOUS",
                         "API",
                         "Account locked after " + user.getFailedAttemps() + " failed login attempts",
@@ -288,7 +268,7 @@ public class AuthApplicationService {
                         "USER",
                         user.getId(),
                         "LOGIN_FAILED",
-                        request.username(),
+                        request.email(),
                         "ANONYMOUS",
                         "API",
                         "Login failed: Invalid credentials. Failed attempts: " + user.getFailedAttemps(),
@@ -331,6 +311,24 @@ public class AuthApplicationService {
         return new String[]{parts[0], String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length))};
     }
 
+    private void safeRegisterEvent(Long entityId, String user, String action, String userRole, String details) {
+        try {
+            auditService.registerEvent(
+                    "SECURITY",
+                    "USER",
+                    entityId,
+                    action,
+                    user,
+                    userRole,
+                    "API",
+                    details,
+                    null
+            );
+        } catch (Exception ex) {
+            log.warn("No se pudo registrar la auditoría de {} para el usuario '{}': {}", action, user, ex.getMessage());
+        }
+    }
+
     /**
      * Asigna nuevos roles a un usuario existente.
      * Reemplaza los roles actuales con los especificados en la solicitud.
@@ -339,32 +337,29 @@ public class AuthApplicationService {
      * @return Mensaje confirmando la actualización de roles.
      * @throws RuntimeException Si el usuario no se encuentra en el sistema.
      */
-    @Transactional
-    public String assignRole(UpdateRoleRequest  request) {
-        UserJpaEntity user = userRepository.findById(request.idUser()).orElseThrow(() -> new RuntimeException("User not found"));
-        List<RoleJpaEntity> roles = roleRepository.findAllById(request.role());
-
-        String oldRoles = user.getRoles().stream().map(RoleJpaEntity::getName).toList().toString();
-        String newRoles = roles.stream().map(RoleJpaEntity::getName).toList().toString();
-
-        user.setRoles(new LinkedHashSet<>(roles));
-        // System.out.println("user: " + user + " roles: " + user.getRoles());
-        userRepository.save(user);
-
-        // Log role assignment
-        auditService.registerEvent(
-                "SECURITY",
-                "USER",
-                user.getId(),
-                "ROLE_ASSIGNED",
-                user.getUsername(),
-                "ADMIN",
-                "API",
-                "Roles changed from " + oldRoles + " to " + newRoles,
-                null
-        );
-
-        return "User" + user.getFullName() + " updated with roles "; //+ roles.stream().map(RoleJpaEntity::getName).toList();
-    }
+//    @Transactional
+//    public String assignRole(UpdateRoleRequest  request) {
+//        UserJpaEntity user = userRepository.findById(request.idUser()).orElseThrow(() -> new RuntimeException("User not found"));
+//        Optional<RoleJpaEntity> roles = roleRepository.findById(request.role());
+//
+//        user.setRoles(new RoleJpaEntity(roles));
+//        // System.out.println("user: " + user + " roles: " + user.getRoles());
+//        userRepository.save(user);
+//
+//        // Log role assignment
+//        auditService.registerEvent(
+//                "SECURITY",
+//                "USER",
+//                user.getId(),
+//                "ROLE_ASSIGNED",
+//                user.getUsername(),
+//                "ADMIN",
+//                "API",
+//                "Roles changed from " + oldRoles + " to " + newRoles,
+//                null
+//        );
+//
+//        return "User" + user.getFullName() + " updated with roles "; //+ roles.stream().map(RoleJpaEntity::getName).toList();
+//    }
 }
 

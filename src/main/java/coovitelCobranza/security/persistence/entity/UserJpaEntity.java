@@ -1,22 +1,8 @@
 package coovitelCobranza.security.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import org.hibernate.annotations.ColumnDefault;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Entidad JPA que representa un usuario en el sistema.
@@ -88,11 +74,11 @@ public class UserJpaEntity {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<RoleJpaEntity> roles = new LinkedHashSet<>();
+    private RoleJpaEntity roles = new RoleJpaEntity();
 
     @Column(columnDefinition = "int DEFAULT 0")
     private int failedAttemps;
@@ -103,7 +89,7 @@ public class UserJpaEntity {
     public UserJpaEntity(Long id, String username, String password, String fullName, String firstName,
                             String lastName, String email,
                             boolean enabled, boolean locked, LocalDateTime createdAt, LocalDateTime updatedAt,
-                            Set<RoleJpaEntity> roles) {
+                            RoleJpaEntity roles) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -115,9 +101,7 @@ public class UserJpaEntity {
         this.locked = locked;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        if (roles != null) {
-            this.roles = new LinkedHashSet<>(roles);
-        }
+        this.roles = roles;
         this.failedAttemps = failedAttemps;
     }
 
@@ -324,7 +308,7 @@ public class UserJpaEntity {
      *
      * @return Conjunto de roles.
      */
-    public Set<RoleJpaEntity> getRoles() {
+    public RoleJpaEntity getRoles() {
         return roles;
     }
 
@@ -333,8 +317,8 @@ public class UserJpaEntity {
      *
      * @param roles Conjunto de roles.
      */
-    public void setRoles(Set<RoleJpaEntity> roles) {
-        this.roles = roles == null ? new LinkedHashSet<>() : new LinkedHashSet<>(roles);
+    public void setRoles(RoleJpaEntity roles) {
+        this.roles = roles;
     }
 
     public int getFailedAttemps() {
@@ -343,15 +327,6 @@ public class UserJpaEntity {
 
     public void setFailedAttemps(int failedAttemps) {
         this.failedAttemps = failedAttemps;
-    }
-
-    /**
-     * Añade un rol al usuario.
-     *
-     * @param role Rol a agregar.
-     */
-    public void addRole(RoleJpaEntity role) {
-        this.roles.add(role);
     }
 
     /**

@@ -3,7 +3,6 @@ package coovitelCobranza.security.application.service;
 import coovitelCobranza.security.persistence.entity.RoleJpaEntity;
 import coovitelCobranza.security.persistence.entity.UserJpaEntity;
 import coovitelCobranza.security.persistence.repository.UserJpaRepository;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,8 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 /**
  * Servicio de detalles de usuario para Spring Security.
@@ -36,25 +34,25 @@ public class SecurityUserDetailsService implements UserDetailsService {
      * Carga los detalles del usuario por nombre de usuario.
      * Obtiene el usuario y sus roles para autenticación.
      *
-     * @param username Nombre de usuario a buscar.
+     * @param email Nombre de usuario a buscar.
      * @return Detalles del usuario para Spring Security.
      * @throws UsernameNotFoundException Si el usuario no existe en el sistema.
      */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserJpaEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UserJpaEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
-        Set<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(RoleJpaEntity::getName)
-                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toSet());
+        RoleJpaEntity role = user.getRoles();
+        String authorityName = role == null || role.getName() == null || role.getName().isBlank()
+                ? "ROLE_USER"
+                : (role.getName().startsWith("ROLE_") ? role.getName() : "ROLE_" + role.getName());
 
         return User.builder()
                 .username(user.getUsername())
+                //.username(user.getEmail())
                 .password(user.getPassword())
-                .authorities(authorities)
+                .authorities(Collections.singleton(new SimpleGrantedAuthority(authorityName)))
                 .accountLocked(user.isLocked())
                 .disabled(!user.isEnabled())
                 .build();

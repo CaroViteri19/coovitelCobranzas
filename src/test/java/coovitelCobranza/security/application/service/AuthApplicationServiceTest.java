@@ -20,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -78,14 +77,15 @@ class AuthApplicationServiceTest {
                 "newuser",
                 "Pass12345!@#",
                 "New User",
-                "new.user@test.com"
+                "new.user@test.com",
+                1L
         );
 
-        RoleJpaEntity userRole = new RoleJpaEntity(1L, "USER", "Default role", LocalDateTime.now());
+        RoleJpaEntity userRole = new RoleJpaEntity(1L, "AGENTE", "Default role", LocalDateTime.now());
 
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail("new.user@test.com")).thenReturn(false);
-        when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(userRole));
         when(passwordEncoder.encode("Pass12345!@#")).thenReturn("encoded-password");
         when(userRepository.save(any(UserJpaEntity.class))).thenAnswer(invocation -> {
             UserJpaEntity user = invocation.getArgument(0);
@@ -98,7 +98,7 @@ class AuthApplicationServiceTest {
         assertEquals(10L, response.id());
         assertEquals("newuser", response.username());
         assertEquals("new.user@test.com", response.email());
-        assertTrue(response.roles().contains("USER"));
+        assertTrue(response.roles().contains("AGENTE"));
         assertTrue(response.enabled());
     }
 
@@ -109,7 +109,8 @@ class AuthApplicationServiceTest {
                 "existing",
                 "Pass12345!@#",
                 "Existing User",
-                "existing@test.com"
+                "existing@test.com",
+                1L
         );
 
         when(userRepository.existsByUsername("existing")).thenReturn(true);
@@ -124,28 +125,27 @@ class AuthApplicationServiceTest {
                 "another",
                 "Pass12345!@#",
                 "Another User",
-                "another@test.com"
+                "another@test.com",
+                2L
         );
 
-        RoleJpaEntity createdRole = new RoleJpaEntity(2L, "USER", "Default platform user role", LocalDateTime.now());
+        RoleJpaEntity createdRole = new RoleJpaEntity(2L, "AGENTE", "Default platform user role", LocalDateTime.now());
 
         when(userRepository.existsByUsername("another")).thenReturn(false);
         when(userRepository.existsByEmail("another@test.com")).thenReturn(false);
-        when(roleRepository.findByName("USER")).thenReturn(Optional.empty());
-        when(roleRepository.save(any(RoleJpaEntity.class))).thenReturn(createdRole);
+        when(roleRepository.findById(2L)).thenReturn(Optional.of(createdRole));
         when(passwordEncoder.encode("Pass12345!@#")).thenReturn("encoded-password");
         when(userRepository.save(any(UserJpaEntity.class))).thenAnswer(invocation -> {
             UserJpaEntity user = invocation.getArgument(0);
             user.setId(11L);
-            user.setRoles(new LinkedHashSet<>());
-            user.addRole(createdRole);
+            user.setRoles(new RoleJpaEntity());
             return user;
         });
 
         RegisterUserResponse response = service.register(request);
 
         assertEquals(11L, response.id());
-        assertTrue(response.roles().contains("USER"));
+        assertTrue(response.roles().contains("AGENTE"));
     }
 }
 

@@ -2,6 +2,7 @@ package coovitelCobranza.security.application.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -11,7 +12,8 @@ import jakarta.validation.constraints.Size;
  * @param username Nombre de usuario (entre 4 y 80 caracteres).
  * @param password Contraseña del usuario (entre 8 y 120 caracteres).
  * @param fullName Nombre completo del usuario (máximo 150 caracteres).
- * @param email Correo electrónico del usuario (válido, máximo 120 caracteres).
+ * @param email    Correo electrónico del usuario (válido, máximo 120 caracteres).
+ * @param role     Identificador del rol asignado al usuario (requerido).
  */
 public record RegisterUserRequest(
         @NotBlank(message = "username is required")
@@ -29,7 +31,11 @@ public record RegisterUserRequest(
         @NotBlank(message = "email is required")
         @Email(message = "email must be valid")
         @Size(max = 120, message = "email must not exceed 120 characters")
-        String email
+        String email,
+
+        @NotNull(message = "role is required")
+        Long role
+
 ) {
 }
 

@@ -18,7 +18,7 @@ public record RegisterUserResponse(
         String username,
         String fullName,
         String email,
-        List<String> roles,
+        String roles,
         boolean enabled
 ) {     
 }
