@@ -6,45 +6,36 @@ import coovitelCobranza.security.persistence.entity.UserJpaEntity;
 import coovitelCobranza.security.persistence.repository.RoleJpaRepository;
 import coovitelCobranza.security.persistence.repository.UserJpaRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 /**
  * Cargador de datos de inicialización para seguridad.
- * Crea el rol de administrador y el usuario administrador por defecto al iniciar la aplicación.
+ * Crea roles y usuarios de prueba al iniciar la aplicación.
+ * Los usuarios están disponibles inmediatamente después de cada reinicio.
  */
 @Component
 public class SecurityBootstrapDataLoader implements CommandLineRunner {
 
     private final SecurityBootstrapProperties bootstrapProperties;
-    private final RoleJpaRepository roleRepository;
-    private final UserJpaRepository userRepository;
+    private final RoleJpaRepository           roleRepository;
+    private final UserJpaRepository           userRepository;
+    private final PasswordEncoder             passwordEncoder;
 
-    private static final String ADMIN_PASSWORD_HASH = "$2b$12$fqSw.mgazZMAs12M0ncI1u3ojo8vFT01QKLWWHg/a9Adf/Al5tnou";
-
-    /**
-     * Constructor con inyección de dependencias.
-     *
-     * @param bootstrapProperties Propiedades de configuración del bootstrap.
-     * @param roleRepository Repositorio de roles.
-     * @param userRepository Repositorio de usuarios.
-     */
     public SecurityBootstrapDataLoader(SecurityBootstrapProperties bootstrapProperties,
-                                      RoleJpaRepository roleRepository,
-                                      UserJpaRepository userRepository) {
+                                       RoleJpaRepository roleRepository,
+                                       UserJpaRepository userRepository,
+                                       PasswordEncoder passwordEncoder) {
         this.bootstrapProperties = bootstrapProperties;
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
+        this.roleRepository      = roleRepository;
+        this.userRepository      = userRepository;
+        this.passwordEncoder     = passwordEncoder;
     }
 
-    /**
-     * Ejecuta la carga de datos inicial si está habilitada.
-     * Crea el rol ADMIN y el usuario administrador si no existen.
-     *
-     * @param args Argumentos de línea de comandos (no utilizados).
-     */
     @Override
     @Transactional
     public void run(String... args) {
@@ -52,39 +43,60 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
             return;
         }
 
-        // Crear los 4 roles del sistema si no existen
-        RoleJpaEntity adminRole = createRoleIfNotExists("ADMINISTRADOR", "Acceso total al sistema. Gestiona usuarios, configuracion y todos los modulos.");
-        createRoleIfNotExists("SUPERVISOR",    "Supervisa agentes y casos. Acceso de escritura en gestion, recaudo y orquestacion.");
-        createRoleIfNotExists("AGENTE",        "Ejecuta gestiones de cobranza. Acceso a casos, interacciones y recaudo.");
-        createRoleIfNotExists("AUDITOR",       "Revision y auditoria. Acceso de solo lectura en todos los modulos.");
+        // ── 1. Crear los 4 roles del sistema ───────────────────────────────────
+        RoleJpaEntity adminRole    = createRoleIfNotExists("ADMINISTRADOR",
+                "Acceso total al sistema. Gestiona usuarios, configuracion y todos los modulos.");
+        RoleJpaEntity superRole    = createRoleIfNotExists("SUPERVISOR",
+                "Supervisa agentes y casos. Acceso de escritura en gestion, recaudo y orquestacion.");
+        RoleJpaEntity agenteRole   = createRoleIfNotExists("AGENTE",
+                "Ejecuta gestiones de cobranza. Acceso a casos, interacciones y recaudo.");
+        RoleJpaEntity auditorRole  = createRoleIfNotExists("AUDITOR",
+                "Revision y auditoria. Acceso de solo lectura en todos los modulos.");
 
-        if (userRepository.existsByUsername(bootstrapProperties.getAdminUsername())) {
-            return;
-        }
+        // ── 2. Crear usuarios de prueba por cada rol ───────────────────────────
+        // Todos usan contraseñas que cumplen la política: ≥12 chars + 1 especial
+        createUserIfNotExists("admin",      "admin@coovitel.co",      "Admin@coovitel1!",  "System Administrator",  "System",   "Administrator", adminRole);
+        createUserIfNotExists("supervisor", "supervisor@coovitel.co", "Super@coovitel1!",  "Laura Rodriguez",       "Laura",    "Rodriguez",     superRole);
+        createUserIfNotExists("agente01",   "agente01@coovitel.co",   "Agente@coovitel1!", "Agente Primero",        "Agente",   "Primero",       agenteRole);
+        createUserIfNotExists("auditor",    "auditor@coovitel.co",    "Audit@coovitel1!",  "Carlos Mejia",          "Carlos",   "Mejia",         auditorRole);
 
-        UserJpaEntity adminUser = new UserJpaEntity();
-        String[] nameParts = splitFullName(bootstrapProperties.getAdminFullName());
-        adminUser.setUsername(bootstrapProperties.getAdminUsername());
-        adminUser.setPassword(ADMIN_PASSWORD_HASH);
-        adminUser.setFullName(bootstrapProperties.getAdminFullName());
-        adminUser.setFirstName(nameParts[0]);
-        adminUser.setLastName(nameParts[1]);
-        adminUser.setEmail("admin@coovitel.co");   // email fijo para login
-        adminUser.setEnabled(true);
-        adminUser.setLocked(false);
-        adminUser.setCreatedAt(LocalDateTime.now());
-        adminUser.setUpdatedAt(LocalDateTime.now());
-        adminUser.setRoles(adminRole);
-        userRepository.save(adminUser);
+        System.out.println("""
+            ╔══════════════════════════════════════════════════════════════╗
+            ║              USUARIOS DE PRUEBA DISPONIBLES                  ║
+            ╠══════════════╦══════════════════════════╦═══════════════════╣
+            ║ ROL          ║ EMAIL                    ║ CONTRASEÑA        ║
+            ╠══════════════╬══════════════════════════╬═══════════════════╣
+            ║ ADMINISTRADOR║ admin@coovitel.co        ║ Admin@coovitel1!  ║
+            ║ SUPERVISOR   ║ supervisor@coovitel.co   ║ Super@coovitel1!  ║
+            ║ AGENTE       ║ agente01@coovitel.co     ║ Agente@coovitel1! ║
+            ║ AUDITOR      ║ auditor@coovitel.co      ║ Audit@coovitel1!  ║
+            ╚══════════════╩══════════════════════════╩═══════════════════╝
+            """);
     }
 
-    /**
-     * Crea un rol si no existe en la base de datos.
-     *
-     * @param name nombre del rol
-     * @param description descripcion del rol
-     * @return el rol existente o el recien creado
-     */
+    // ── helpers ────────────────────────────────────────────────────────────────
+
+    private void createUserIfNotExists(String username, String email, String rawPassword,
+                                       String fullName, String firstName, String lastName,
+                                       RoleJpaEntity role) {
+        if (userRepository.existsByUsername(username)) {
+            return;
+        }
+        UserJpaEntity user = new UserJpaEntity();
+        user.setUsername(username);
+        user.setEmail(email.toLowerCase());
+        user.setPassword(passwordEncoder.encode(rawPassword));   // hash BCrypt $2a$ generado en tiempo real
+        user.setFullName(fullName);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEnabled(true);
+        user.setLocked(false);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
+        user.setRoles(role);
+        userRepository.save(user);
+    }
+
     private RoleJpaEntity createRoleIfNotExists(String name, String description) {
         return roleRepository.findByName(name)
                 .orElseGet(() -> {
@@ -95,23 +107,4 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
                     return roleRepository.save(role);
                 });
     }
-
-    /**
-     * Divide el nombre completo en primer nombre y apellidos.
-     *
-     * @param fullName Nombre completo a dividir.
-     * @return Array con [primer nombre, apellidos].
-     */
-    private String[] splitFullName(String fullName) {
-        String trimmed = fullName == null ? "" : fullName.trim();
-        if (trimmed.isEmpty()) {
-            return new String[]{"System", "Administrator"};
-        }
-        String[] parts = trimmed.split("\\s+");
-        if (parts.length == 1) {
-            return new String[]{parts[0], parts[0]};
-        }
-        return new String[]{parts[0], String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length))};
-    }
 }
-
