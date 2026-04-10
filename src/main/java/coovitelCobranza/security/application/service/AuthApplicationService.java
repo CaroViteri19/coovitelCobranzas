@@ -185,13 +185,14 @@ public class AuthApplicationService {
      * @throws InvalidCredentialsException Si las credenciales son inválidas.
      */
     public LoginResponse login(LoginRequest request) {
-        UserJpaEntity user = userRepository.findByEmail(request.email().trim())
+        String normalizedLoginEmail = request.email().trim().toLowerCase(Locale.ROOT);
+        UserJpaEntity user = userRepository.findByEmail(normalizedLoginEmail)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
         try {
             if (!user.isLocked()) {
 
                 Authentication authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+                        new UsernamePasswordAuthenticationToken(normalizedLoginEmail, request.password()));
                 Instant issuedAt = Instant.now();
                 Instant expiresAt = issuedAt.plus(jwtProperties.getExpirationMinutes(), ChronoUnit.MINUTES);
                 List<String> roles = authentication.getAuthorities().stream()

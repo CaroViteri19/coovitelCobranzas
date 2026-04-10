@@ -40,7 +40,8 @@ public class SecurityUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserJpaEntity user = userRepository.findByEmail(email)
+        String normalizedEmail = email == null ? "" : email.trim().toLowerCase(java.util.Locale.ROOT);
+        UserJpaEntity user = userRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         RoleJpaEntity role = user.getRoles();

@@ -56,16 +56,22 @@ public class SecurityConfig {
                 return corsConfiguration;
             }))
                 .csrf(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // H2 console usa iframes
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> auth
+                        // Endpoints públicos — no requieren token
                         .requestMatchers(
-                                "/api/v1/auth/**",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/register",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
+                                "/h2-console/**",   // consola H2 solo dev
                                 "/error"
                         ).permitAll()
+                        // Cualquier otra petición requiere JWT válido.
+                        // El rol específico se controla con @PreAuthorize en cada método.
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();

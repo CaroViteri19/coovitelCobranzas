@@ -69,7 +69,7 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
         adminUser.setFullName(bootstrapProperties.getAdminFullName());
         adminUser.setFirstName(nameParts[0]);
         adminUser.setLastName(nameParts[1]);
-        adminUser.setEmail(null);
+        adminUser.setEmail("admin@coovitel.co");   // email fijo para login
         adminUser.setEnabled(true);
         adminUser.setLocked(false);
         adminUser.setCreatedAt(LocalDateTime.now());
