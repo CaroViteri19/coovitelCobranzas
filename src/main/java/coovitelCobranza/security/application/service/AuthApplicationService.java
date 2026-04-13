@@ -171,7 +171,7 @@ public class AuthApplicationService {
                 savedUser.getUsername(),
                 savedUser.getFullName(),
                 savedUser.getEmail(),
-                role.getName(),
+                List.of(role.getName()),
                 savedUser.isEnabled()
         );
     }
@@ -331,36 +331,40 @@ public class AuthApplicationService {
     }
 
     /**
-     * Asigna nuevos roles a un usuario existente.
-     * Reemplaza los roles actuales con los especificados en la solicitud.
+     * Asigna un nuevo rol a un usuario existente.
+     * Reemplaza el rol actual con el primero de la lista recibida.
      *
-     * @param request Solicitud con el identificador del usuario y roles a asignar.
-     * @return Mensaje confirmando la actualización de roles.
-     * @throws RuntimeException Si el usuario no se encuentra en el sistema.
+     * @param request Solicitud con el ID del usuario y el ID del rol a asignar.
+     * @return Mensaje confirmando la actualización de rol.
+     * @throws RuntimeException Si el usuario o rol no se encuentran en el sistema.
      */
-//    @Transactional
-//    public String assignRole(UpdateRoleRequest  request) {
-//        UserJpaEntity user = userRepository.findById(request.idUser()).orElseThrow(() -> new RuntimeException("User not found"));
-//        Optional<RoleJpaEntity> roles = roleRepository.findById(request.role());
-//
-//        user.setRoles(new RoleJpaEntity(roles));
-//        // System.out.println("user: " + user + " roles: " + user.getRoles());
-//        userRepository.save(user);
-//
-//        // Log role assignment
-//        auditService.registerEvent(
-//                "SECURITY",
-//                "USER",
-//                user.getId(),
-//                "ROLE_ASSIGNED",
-//                user.getUsername(),
-//                "ADMIN",
-//                "API",
-//                "Roles changed from " + oldRoles + " to " + newRoles,
-//                null
-//        );
-//
-//        return "User" + user.getFullName() + " updated with roles "; //+ roles.stream().map(RoleJpaEntity::getName).toList();
-//    }
+    @Transactional
+    public String assignRole(UpdateRoleRequest request) {
+        UserJpaEntity user = userRepository.findById(request.idUser())
+                .orElseThrow(() -> new RuntimeException("User not found: " + request.idUser()));
+
+        Long roleId = request.role().get(0);
+        RoleJpaEntity newRole = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found: " + roleId));
+
+        String oldRoleName = user.getRoles() != null ? user.getRoles().getName() : "none";
+        user.setRoles(newRole);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        auditService.registerEvent(
+                "SECURITY",
+                "USER",
+                user.getId(),
+                "ROLE_ASSIGNED",
+                user.getUsername(),
+                "ADMIN",
+                "API",
+                "Role changed from " + oldRoleName + " to " + newRole.getName(),
+                null
+        );
+
+        return "User " + user.getFullName() + " updated with role: " + newRole.getName();
+    }
 }
 
