@@ -6,8 +6,10 @@ import coovitelCobranza.security.application.exception.InvalidCredentialsExcepti
 import coovitelCobranza.security.application.exception.UserAlreadyExistsException;
 import coovitelCobranza.security.config.JwtProperties;
 import coovitelCobranza.security.persistence.entity.RoleJpaEntity;
+import coovitelCobranza.security.persistence.entity.TypeDocumentEntity;
 import coovitelCobranza.security.persistence.entity.UserJpaEntity;
 import coovitelCobranza.security.persistence.repository.RoleJpaRepository;
+import coovitelCobranza.security.persistence.repository.TypeDocumentRepository;
 import coovitelCobranza.security.persistence.repository.UserJpaRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,10 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 /**
  * Servicio de aplicación para gestionar la autenticación y registro de usuarios.
@@ -50,6 +50,7 @@ public class AuthApplicationService {
     private final RoleJpaRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
+    private final TypeDocumentRepository typeDocumentRepository;
 
     /**
      * Constructor con inyección de dependencias.
@@ -67,7 +68,7 @@ public class AuthApplicationService {
                                   UserJpaRepository userRepository,
                                   RoleJpaRepository roleRepository,
                                   PasswordEncoder passwordEncoder,
-                                  AuditService auditService) {
+                                  AuditService auditService, TypeDocumentRepository typeDocumentRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtEncoder = jwtEncoder;
         this.jwtProperties = jwtProperties;
@@ -75,6 +76,7 @@ public class AuthApplicationService {
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.auditService = auditService;
+        this.typeDocumentRepository = typeDocumentRepository;
     }
 
     /**
@@ -133,6 +135,23 @@ public class AuthApplicationService {
             throw new IllegalArgumentException("Password must be at least 12 characters long and contain at least one special character");
         }
 
+        TypeDocumentEntity typeDocumentEntity = typeDocumentRepository
+                .findByAbbreviationIgnoreCase(request.documentType().trim())
+                .orElseGet(() -> typeDocumentRepository.findByDescription(request.documentType().trim()));
+
+        if (typeDocumentEntity == null) {
+            safeRegisterEvent(
+                    null,
+                    request.username(),
+                    "REGISTRATION_FAILED",
+                    "ANONYMOUS",
+                    "Registration failed: Invalid document type"
+            );
+            throw new IllegalArgumentException("Invalid document type");
+        }
+
+        user.setTypeDocument(typeDocumentEntity);
+        user.setDocument(request.document());
         user.setFullName(request.fullName().trim());
         user.setFirstName(nameParts[0]);
         user.setLastName(nameParts[1]);
@@ -185,6 +204,7 @@ public class AuthApplicationService {
      * @throws InvalidCredentialsException Si las credenciales son inválidas.
      */
     public LoginResponse login(LoginRequest request) {
+        System.out.println("ENTRO AL SERVICIO");
         String normalizedLoginEmail = request.email().trim().toLowerCase(Locale.ROOT);
         UserJpaEntity user = userRepository.findByEmail(normalizedLoginEmail)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
@@ -329,15 +349,6 @@ public class AuthApplicationService {
             log.warn("No se pudo registrar la auditoría de {} para el usuario '{}': {}", action, user, ex.getMessage());
         }
     }
-
-    /**
-     * Asigna nuevos roles a un usuario existente.
-     * Reemplaza los roles actuales con los especificados en la solicitud.
-     *
-     * @param request Solicitud con el identificador del usuario y roles a asignar.
-     * @return Mensaje confirmando la actualización de roles.
-     * @throws RuntimeException Si el usuario no se encuentra en el sistema.
-     */
 //    @Transactional
 //    public String assignRole(UpdateRoleRequest  request) {
 //        UserJpaEntity user = userRepository.findById(request.idUser()).orElseThrow(() -> new RuntimeException("User not found"));

@@ -11,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: false
     open-in-view: false
     properties:
@@ -30,5 +30,8 @@ app:
     bootstrap:
       enabled: true
       admin-username: admin
+      admin-email: admin@coovitel.local
       admin-password: Admin123!
       admin-full-name: System Administrator
+      admin-document-type: CC
+      admin-document: 1000000000

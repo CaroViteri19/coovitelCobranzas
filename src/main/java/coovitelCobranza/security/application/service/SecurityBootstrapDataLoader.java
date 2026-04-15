@@ -2,38 +2,49 @@ package coovitelCobranza.security.application.service;
 
 import coovitelCobranza.security.config.SecurityBootstrapProperties;
 import coovitelCobranza.security.persistence.entity.RoleJpaEntity;
+import coovitelCobranza.security.persistence.entity.TypeDocumentEntity;
 import coovitelCobranza.security.persistence.entity.UserJpaEntity;
 import coovitelCobranza.security.persistence.repository.RoleJpaRepository;
+import coovitelCobranza.security.persistence.repository.TypeDocumentRepository;
 import coovitelCobranza.security.persistence.repository.UserJpaRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.Locale;
 
 /**
- * Cargador de datos de inicialización para seguridad.
- * Crea roles y usuarios de prueba al iniciar la aplicación.
- * Los usuarios están disponibles inmediatamente después de cada reinicio.
+ * Inicializa datos básicos de seguridad al arrancar la aplicación.
+ * Crea el rol ADMIN, el tipo de documento base y un usuario administrador genérico.
  */
 @Component
+@ConditionalOnProperty(prefix = "app.security.bootstrap", name = "enabled", havingValue = "true")
 public class SecurityBootstrapDataLoader implements CommandLineRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(SecurityBootstrapDataLoader.class);
+
     private final SecurityBootstrapProperties bootstrapProperties;
-    private final RoleJpaRepository           roleRepository;
-    private final UserJpaRepository           userRepository;
-    private final PasswordEncoder             passwordEncoder;
+    private final RoleJpaRepository roleRepository;
+    private final TypeDocumentRepository typeDocumentRepository;
+    private final UserJpaRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public SecurityBootstrapDataLoader(SecurityBootstrapProperties bootstrapProperties,
                                        RoleJpaRepository roleRepository,
+                                       TypeDocumentRepository typeDocumentRepository,
                                        UserJpaRepository userRepository,
                                        PasswordEncoder passwordEncoder) {
         this.bootstrapProperties = bootstrapProperties;
-        this.roleRepository      = roleRepository;
-        this.userRepository      = userRepository;
-        this.passwordEncoder     = passwordEncoder;
+        this.roleRepository = roleRepository;
+        this.typeDocumentRepository = typeDocumentRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -43,68 +54,85 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
             return;
         }
 
-        // ── 1. Crear los 4 roles del sistema ───────────────────────────────────
-        RoleJpaEntity adminRole    = createRoleIfNotExists("ADMINISTRADOR",
-                "Acceso total al sistema. Gestiona usuarios, configuracion y todos los modulos.");
-        RoleJpaEntity superRole    = createRoleIfNotExists("SUPERVISOR",
-                "Supervisa agentes y casos. Acceso de escritura en gestion, recaudo y orquestacion.");
-        RoleJpaEntity agenteRole   = createRoleIfNotExists("AGENTE",
-                "Ejecuta gestiones de cobranza. Acceso a casos, interacciones y recaudo.");
-        RoleJpaEntity auditorRole  = createRoleIfNotExists("AUDITOR",
-                "Revision y auditoria. Acceso de solo lectura en todos los modulos.");
-
-        // ── 2. Crear usuarios de prueba por cada rol ───────────────────────────
-        // Todos usan contraseñas que cumplen la política: ≥12 chars + 1 especial
-        createUserIfNotExists("admin",      "admin@coovitel.co",      "Admin@coovitel1!",  "System Administrator",  "System",   "Administrator", adminRole);
-        createUserIfNotExists("supervisor", "supervisor@coovitel.co", "Super@coovitel1!",  "Laura Rodriguez",       "Laura",    "Rodriguez",     superRole);
-        createUserIfNotExists("agente01",   "agente01@coovitel.co",   "Agente@coovitel1!", "Agente Primero",        "Agente",   "Primero",       agenteRole);
-        createUserIfNotExists("auditor",    "auditor@coovitel.co",    "Audit@coovitel1!",  "Carlos Mejia",          "Carlos",   "Mejia",         auditorRole);
-
-        System.out.println("""
-            ╔══════════════════════════════════════════════════════════════╗
-            ║              USUARIOS DE PRUEBA DISPONIBLES                  ║
-            ╠══════════════╦══════════════════════════╦═══════════════════╣
-            ║ ROL          ║ EMAIL                    ║ CONTRASEÑA        ║
-            ╠══════════════╬══════════════════════════╬═══════════════════╣
-            ║ ADMINISTRADOR║ admin@coovitel.co        ║ Admin@coovitel1!  ║
-            ║ SUPERVISOR   ║ supervisor@coovitel.co   ║ Super@coovitel1!  ║
-            ║ AGENTE       ║ agente01@coovitel.co     ║ Agente@coovitel1! ║
-            ║ AUDITOR      ║ auditor@coovitel.co      ║ Audit@coovitel1!  ║
-            ╚══════════════╩══════════════════════════╩═══════════════════╝
-            """);
+        RoleJpaEntity adminRole = ensureAdminRole();
+        TypeDocumentEntity adminDocumentType = ensureAdminDocumentType();
+        ensureAdminUser(adminRole, adminDocumentType);
     }
 
-    // ── helpers ────────────────────────────────────────────────────────────────
-
-    private void createUserIfNotExists(String username, String email, String rawPassword,
-                                       String fullName, String firstName, String lastName,
-                                       RoleJpaEntity role) {
-        if (userRepository.existsByUsername(username)) {
-            return;
-        }
-        UserJpaEntity user = new UserJpaEntity();
-        user.setUsername(username);
-        user.setEmail(email.toLowerCase());
-        user.setPassword(passwordEncoder.encode(rawPassword));   // hash BCrypt $2a$ generado en tiempo real
-        user.setFullName(fullName);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEnabled(true);
-        user.setLocked(false);
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
-        user.setRoles(role);
-        userRepository.save(user);
-    }
-
-    private RoleJpaEntity createRoleIfNotExists(String name, String description) {
-        return roleRepository.findByName(name)
+    private RoleJpaEntity ensureAdminRole() {
+        return roleRepository.findByName("ADMIN")
                 .orElseGet(() -> {
                     RoleJpaEntity role = new RoleJpaEntity();
-                    role.setName(name);
-                    role.setDescription(description);
+                    role.setName("ADMIN");
+                    role.setDescription("Acceso total al sistema");
                     role.setCreatedAt(LocalDateTime.now());
                     return roleRepository.save(role);
                 });
     }
+
+    private TypeDocumentEntity ensureAdminDocumentType() {
+        String abbreviation = bootstrapProperties.getAdminDocumentType() == null
+                ? "CC"
+                : bootstrapProperties.getAdminDocumentType().trim().toUpperCase(Locale.ROOT);
+        return typeDocumentRepository.findByAbbreviationIgnoreCase(abbreviation)
+                .orElseGet(() -> {
+                    TypeDocumentEntity documentType = new TypeDocumentEntity();
+                    documentType.setAbbreviation(abbreviation);
+                    documentType.setDescription("Documento de identidad");
+                    return typeDocumentRepository.save(documentType);
+                });
+    }
+
+    private void ensureAdminUser(RoleJpaEntity adminRole, TypeDocumentEntity adminDocumentType) {
+        String username = normalize(bootstrapProperties.getAdminUsername());
+        String email = normalize(bootstrapProperties.getAdminEmail());
+
+        if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
+            return;
+        }
+
+        String fullName = bootstrapProperties.getAdminFullName() == null ? "System Administrator" : bootstrapProperties.getAdminFullName().trim();
+        String[] nameParts = splitFullName(fullName);
+
+        UserJpaEntity admin = new UserJpaEntity();
+        admin.setUsername(username);
+        admin.setEmail(email);
+        admin.setPassword(passwordEncoder.encode(bootstrapProperties.getAdminPassword()));
+        admin.setFullName(fullName);
+        admin.setFirstName(nameParts[0]);
+        admin.setLastName(nameParts[1]);
+        admin.setTypeDocument(adminDocumentType);
+        admin.setDocument(bootstrapProperties.getAdminDocument());
+        admin.setEnabled(true);
+        admin.setLocked(false);
+        admin.setCreatedAt(LocalDateTime.now());
+        admin.setUpdatedAt(LocalDateTime.now());
+        admin.setRoles(adminRole);
+
+        try {
+            userRepository.save(admin);
+            log.info("Usuario administrador genérico creado: {} ({})", username, email);
+        } catch (DataIntegrityViolationException ex) {
+            log.warn("No se pudo crear el usuario administrador genérico: {}", ex.getMessage());
+        }
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String[] splitFullName(String fullName) {
+        String trimmed = fullName == null ? "" : fullName.trim();
+        if (trimmed.isBlank()) {
+            return new String[]{"System", "Administrator"};
+        }
+        String[] parts = trimmed.split("\\s+");
+        if (parts.length == 1) {
+            return new String[]{parts[0], parts[0]};
+        }
+        return new String[]{parts[0], String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length))};
+    }
 }
+
+
+

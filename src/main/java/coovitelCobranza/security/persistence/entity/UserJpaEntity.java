@@ -38,6 +38,13 @@ public class UserJpaEntity {
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_document_id", nullable = false)
+    private TypeDocumentEntity typeDocument;
+
+    @Column(name = "document", nullable = false, length = 10)
+    private Long document;
+
     /**
      * Primer nombre del usuario (máximo 255 caracteres).
      */
@@ -175,6 +182,22 @@ public class UserJpaEntity {
      */
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public TypeDocumentEntity getTypeDocument() {
+        return typeDocument;
+    }
+
+    public void setTypeDocument(TypeDocumentEntity typeDocument) {
+        this.typeDocument = typeDocument;
+    }
+
+    public Long getDocument() {
+        return document;
+    }
+
+    public void setDocument(Long document) {
+        this.document = document;
     }
 
     /**

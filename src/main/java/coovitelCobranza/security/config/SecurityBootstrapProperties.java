@@ -30,6 +30,21 @@ public class SecurityBootstrapProperties {
     private String adminFullName;
 
     /**
+     * Correo electrónico del administrador predeterminado.
+     */
+    private String adminEmail;
+
+    /**
+     * Tipo de documento del administrador predeterminado.
+     */
+    private String adminDocumentType;
+
+    /**
+     * Número de documento del administrador predeterminado.
+     */
+    private Long adminDocument;
+
+    /**
      * Verifica si el bootstrap está habilitado.
      *
      * @return true si está habilitado, false en caso contrario.
@@ -99,6 +114,30 @@ public class SecurityBootstrapProperties {
      */
     public void setAdminFullName(String adminFullName) {
         this.adminFullName = adminFullName;
+    }
+
+    public String getAdminEmail() {
+        return adminEmail;
+    }
+
+    public void setAdminEmail(String adminEmail) {
+        this.adminEmail = adminEmail;
+    }
+
+    public String getAdminDocumentType() {
+        return adminDocumentType;
+    }
+
+    public void setAdminDocumentType(String adminDocumentType) {
+        this.adminDocumentType = adminDocumentType;
+    }
+
+    public Long getAdminDocument() {
+        return adminDocument;
+    }
+
+    public void setAdminDocument(Long adminDocument) {
+        this.adminDocument = adminDocument;
     }
 }
 

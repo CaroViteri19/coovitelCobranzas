@@ -6,8 +6,10 @@ import coovitelCobranza.security.application.dto.RegisterUserResponse;
 import coovitelCobranza.security.application.exception.UserAlreadyExistsException;
 import coovitelCobranza.security.config.JwtProperties;
 import coovitelCobranza.security.persistence.entity.RoleJpaEntity;
+import coovitelCobranza.security.persistence.entity.TypeDocumentEntity;
 import coovitelCobranza.security.persistence.entity.UserJpaEntity;
 import coovitelCobranza.security.persistence.repository.RoleJpaRepository;
+import coovitelCobranza.security.persistence.repository.TypeDocumentRepository;
 import coovitelCobranza.security.persistence.repository.UserJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,6 +52,9 @@ class AuthApplicationServiceTest {
     @Mock
     private AuditService auditService;
 
+    @Mock
+    private TypeDocumentRepository typeDocumentRepository;
+
     private AuthApplicationService service;
 
     @BeforeEach
@@ -66,7 +71,8 @@ class AuthApplicationServiceTest {
                 userRepository,
                 roleRepository,
                 passwordEncoder,
-                auditService
+                auditService,
+                typeDocumentRepository
         );
     }
 
@@ -75,6 +81,8 @@ class AuthApplicationServiceTest {
     void registerSuccess() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "newuser",
+                "CC",
+                12345678L,
                 "Pass12345!@#",
                 "New User",
                 "new.user@test.com",
@@ -86,6 +94,8 @@ class AuthApplicationServiceTest {
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail("new.user@test.com")).thenReturn(false);
         when(roleRepository.findById(1L)).thenReturn(Optional.of(userRole));
+        when(typeDocumentRepository.findByAbbreviationIgnoreCase("CC"))
+                .thenReturn(Optional.of(new TypeDocumentEntity(1L, "Cedula", "CC")));
         when(passwordEncoder.encode("Pass12345!@#")).thenReturn("encoded-password");
         when(userRepository.save(any(UserJpaEntity.class))).thenAnswer(invocation -> {
             UserJpaEntity user = invocation.getArgument(0);
@@ -107,6 +117,8 @@ class AuthApplicationServiceTest {
     void registerFailsOnDuplicateUsername() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "existing",
+                "CC",
+                12345679L,
                 "Pass12345!@#",
                 "Existing User",
                 "existing@test.com",
@@ -123,6 +135,8 @@ class AuthApplicationServiceTest {
     void registerCreatesDefaultRoleWhenMissing() {
         RegisterUserRequest request = new RegisterUserRequest(
                 "another",
+                "CC",
+                12345680L,
                 "Pass12345!@#",
                 "Another User",
                 "another@test.com",
@@ -134,6 +148,8 @@ class AuthApplicationServiceTest {
         when(userRepository.existsByUsername("another")).thenReturn(false);
         when(userRepository.existsByEmail("another@test.com")).thenReturn(false);
         when(roleRepository.findById(2L)).thenReturn(Optional.of(createdRole));
+        when(typeDocumentRepository.findByAbbreviationIgnoreCase("CC"))
+                .thenReturn(Optional.of(new TypeDocumentEntity(1L, "Cedula", "CC")));
         when(passwordEncoder.encode("Pass12345!@#")).thenReturn("encoded-password");
         when(userRepository.save(any(UserJpaEntity.class))).thenAnswer(invocation -> {
             UserJpaEntity user = invocation.getArgument(0);
