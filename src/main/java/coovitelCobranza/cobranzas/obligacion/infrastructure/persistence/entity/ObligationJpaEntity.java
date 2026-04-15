@@ -42,8 +42,57 @@ public class ObligationJpaEntity {
     @Column(name = "status")
     private Integer status;
 
+    @Column(name = "segmento", length = 30)
+    private String segmento;
+
+    @Column(name = "producto", length = 50)
+    private String producto;
+
+    @Column(name = "codigo_agente", length = 10)
+    private String codigoAgente;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    // ── Getters / Setters campos batch ────────────────────────────────────────
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getCustomerId() { return customerId; }
+    public void setCustomerId(Long customerId) { this.customerId = customerId; }
+
+    public String getObligationNumber() { return obligationNumber; }
+    public void setObligationNumber(String obligationNumber) { this.obligationNumber = obligationNumber; }
+
+    public java.math.BigDecimal getTotalBalance() { return totalBalance; }
+    public void setTotalBalance(java.math.BigDecimal totalBalance) { this.totalBalance = totalBalance; }
+
+    public java.math.BigDecimal getOverdueBalance() { return overdueBalance; }
+    public void setOverdueBalance(java.math.BigDecimal overdueBalance) { this.overdueBalance = overdueBalance; }
+
+    public Integer getOverdueDays() { return overdueDays; }
+    public void setOverdueDays(Integer overdueDays) { this.overdueDays = overdueDays; }
+
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+
+    public Integer getStatus() { return status; }
+    public void setStatus(Integer status) { this.status = status; }
+
+    public String getSegmento() { return segmento; }
+    public void setSegmento(String segmento) { this.segmento = segmento; }
+
+    public String getProducto() { return producto; }
+    public void setProducto(String producto) { this.producto = producto; }
+
+    public String getCodigoAgente() { return codigoAgente; }
+    public void setCodigoAgente(String codigoAgente) { this.codigoAgente = codigoAgente; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    // ── Mapeo dominio ─────────────────────────────────────────────────────────
 
     public Obligation toDomain() {
         return Obligation.reconstruct(

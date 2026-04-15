@@ -22,5 +22,7 @@ public interface ClientJpaRepository extends JpaRepository<ClientJpaEntity, Long
      * @return Optional con la entidad de cliente si existe
      */
     Optional<ClientJpaEntity> findByTipoDocumentoAndNumeroDocumento(String tipoDocumento, String numeroDocumento);
+
+    Optional<ClientJpaEntity> findByNumeroDocumento(String numeroDocumento);
 }
 
