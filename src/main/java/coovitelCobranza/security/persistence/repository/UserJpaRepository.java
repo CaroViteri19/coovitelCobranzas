@@ -35,6 +35,8 @@ public interface UserJpaRepository extends JpaRepository<UserJpaEntity, Long> {
      */
     boolean existsByEmail(String email);
 
+    boolean existsByEmailAndIdNot(String email, Long id);
+
     UserJpaRepository findByUsernameAndPassword(String username, String password);
     Optional<UserJpaEntity> findByEmail(String email);
 
