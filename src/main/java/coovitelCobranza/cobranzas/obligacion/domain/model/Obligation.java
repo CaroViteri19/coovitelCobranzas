@@ -16,6 +16,10 @@ public class Obligation {
     private StatusObligation status;
     private LocalDate dueDate;
     private LocalDateTime updatedAt;
+    // Campos extendidos — ingesta batch
+    private String segmento;
+    private String producto;
+    private String codigoAgente;
 
     private Obligation(Long id,
                        Long customerId,
@@ -54,6 +58,35 @@ public class Obligation {
                 delinquencyDays, status, dueDate);
         obligation.updatedAt = updatedAt;
         return obligation;
+    }
+
+    /**
+     * Actualiza los campos modificables que provienen de una carga batch.
+     * Aplica la regla: si diasMora > 0 → EN_MORA, si no → AL_DIA.
+     * Los campos opcionales (segmento, producto, codigoAgente) se sobreescriben
+     * solo si el valor entrante no es nulo.
+     *
+     * @param saldoTotal     nuevo saldo total de la obligación
+     * @param diasMora       días de mora actualizados (≥ 0)
+     * @param fechaVenc      nueva fecha de vencimiento
+     * @param segmento       segmento del cliente (nullable)
+     * @param producto       producto financiero (nullable)
+     * @param codigoAgente   código del agente asignado (nullable)
+     */
+    public void updateFromBatch(BigDecimal saldoTotal,
+                                 int diasMora,
+                                 LocalDate fechaVenc,
+                                 String segmento,
+                                 String producto,
+                                 String codigoAgente) {
+        this.totalBalance     = Objects.requireNonNull(saldoTotal, "saldoTotal no puede ser nulo");
+        this.delinquencyDays  = diasMora;
+        this.dueDate          = fechaVenc;
+        this.status           = diasMora > 0 ? StatusObligation.EN_MORA : StatusObligation.AL_DIA;
+        if (segmento     != null) this.segmento     = segmento;
+        if (producto     != null) this.producto     = producto;
+        if (codigoAgente != null) this.codigoAgente = codigoAgente;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void registerDelinquency(int delinquencyDays, BigDecimal overdueBalance) {
@@ -117,6 +150,10 @@ public class Obligation {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+    public String getSegmento() { return segmento; }
+    public String getProducto() { return producto; }
+    public String getCodigoAgente() { return codigoAgente; }
 
     public enum StatusObligation {
         AL_DIA,

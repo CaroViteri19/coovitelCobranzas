@@ -55,12 +55,30 @@ public record CargaMasivaResultResponse(
         );
     }
 
-    /** Factory: resultado fallido con lista de errores. */
+    /** Factory: resultado fallido con lista de errores (0 registros insertados). */
     public static CargaMasivaResultResponse failed(int totalRows,
                                                     String fileName,
                                                     List<RowErrorDTO> errors) {
         return new CargaMasivaResultResponse(
                 false, totalRows, 0, errors.size(), fileName, LocalDateTime.now(), errors
+        );
+    }
+
+    /**
+     * Factory: resultado parcial — algunas filas se procesaron correctamente
+     * y otras fallaron. El proceso NO se detuvo ante los errores por fila.
+     *
+     * @param totalRows      total de filas en el archivo
+     * @param inserted       filas procesadas exitosamente
+     * @param fileName       nombre del archivo
+     * @param errors         errores fila a fila recolectados durante el proceso
+     */
+    public static CargaMasivaResultResponse partial(int totalRows,
+                                                     int inserted,
+                                                     String fileName,
+                                                     List<RowErrorDTO> errors) {
+        return new CargaMasivaResultResponse(
+                inserted > 0, totalRows, inserted, errors.size(), fileName, LocalDateTime.now(), errors
         );
     }
 }

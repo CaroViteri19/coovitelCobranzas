@@ -16,13 +16,13 @@ import org.springframework.web.multipart.MultipartFile;
  *
  * <p>Expone un único endpoint {@code POST /api/v1/carga-masiva/upload} que:
  * <ul>
- *   <li>Acepta archivos CSV via {@code multipart/form-data}</li>
+ *   <li>Acepta archivos {@code .csv} y {@code .txt} via {@code multipart/form-data}</li>
  *   <li>Requiere rol ADMINISTRADOR o SUPERVISOR</li>
  *   <li>Retorna HTTP 201 en éxito o HTTP 422 en caso de errores de validación</li>
  * </ul>
  *
  * <p>El manejo de errores de validación se delega a
- * {@link CargaMasivaExceptionHandler} via {@code @RestControllerAdvice}.
+ * {@code CargaMasivaExceptionHandler} via {@code @RestControllerAdvice}.
  */
 @RestController
 @RequestMapping("/api/v1/carga-masiva")
@@ -36,13 +36,13 @@ public class CargaMasivaController {
     }
 
     /**
-     * Recibe un archivo CSV y ejecuta el proceso de carga masiva.
+     * Recibe un archivo CSV o TXT y ejecuta el proceso de carga masiva.
      *
      * <p>Retorna HTTP 201 con estadísticas si todo fue exitoso.
      * Retorna HTTP 422 con lista detallada de errores si la validación falla.
      *
-     * @param file  archivo CSV recibido como multipart
-     * @param jwt   token JWT del usuario autenticado (para auditoría)
+     * @param file archivo CSV o TXT recibido como multipart
+     * @param jwt  token JWT del usuario autenticado (para auditoría)
      * @return resultado de la carga
      */
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR')")
@@ -68,11 +68,20 @@ public class CargaMasivaController {
         }
     }
 
+    /**
+     * Valida que el archivo tenga extensión {@code .csv} o {@code .txt}.
+     *
+     * @throws IllegalArgumentException si la extensión no es soportada
+     */
     private void validateFileExtension(MultipartFile file) {
         String name = file.getOriginalFilename();
-        if (name == null || !name.toLowerCase().endsWith(".csv")) {
+        if (name == null) {
+            throw new IllegalArgumentException("El nombre del archivo no puede ser nulo.");
+        }
+        String lower = name.toLowerCase();
+        if (!lower.endsWith(".csv") && !lower.endsWith(".txt")) {
             throw new IllegalArgumentException(
-                    "Solo se aceptan archivos con extensión .csv. Archivo recibido: " + name);
+                    "Formato de archivo no soportado: '%s'. Solo se aceptan .csv y .txt.".formatted(name));
         }
     }
 }

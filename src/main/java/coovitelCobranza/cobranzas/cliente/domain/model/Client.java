@@ -16,6 +16,10 @@ public class Client {
     private String fullName;
     private String telefono;
     private String email;
+    // Campos extendidos para ingesta batch
+    private String telefono2;
+    private String ciudad;
+    private String canalPreferido;
     private boolean aceptaWhatsApp;
     private boolean aceptaSms;
     private boolean aceptaEmail;
@@ -40,6 +44,9 @@ public class Client {
                     String fullName,
                     String telefono,
                     String email,
+                    String telefono2,
+                    String ciudad,
+                    String canalPreferido,
                     boolean aceptaWhatsApp,
                     boolean aceptaSms,
                     boolean aceptaEmail) {
@@ -49,6 +56,9 @@ public class Client {
         this.fullName = Objects.requireNonNull(fullName, "fullName is required");
         this.telefono = telefono;
         this.email = email;
+        this.telefono2 = telefono2;
+        this.ciudad = ciudad;
+        this.canalPreferido = canalPreferido;
         this.aceptaWhatsApp = aceptaWhatsApp;
         this.aceptaSms = aceptaSms;
         this.aceptaEmail = aceptaEmail;
@@ -64,7 +74,8 @@ public class Client {
      * @return nueva instancia de Cliente
      */
     public static Client create(String tipoDocumento, String numeroDocumento, String fullName) {
-        return new Client(null, tipoDocumento, numeroDocumento, fullName, null, null, false, false, false);
+        return new Client(null, tipoDocumento, numeroDocumento, fullName,
+                null, null, null, null, null, false, false, false);
     }
 
     /**
@@ -93,7 +104,26 @@ public class Client {
                                       boolean aceptaEmail,
                                       LocalDateTime updatedAt) {
         Client client = new Client(id, tipoDocumento, numeroDocumento, fullName, telefono, email,
-                aceptaWhatsApp, aceptaSms, aceptaEmail);
+                null, null, null, aceptaWhatsApp, aceptaSms, aceptaEmail);
+        client.updatedAt = updatedAt;
+        return client;
+    }
+
+    public static Client reconstructFull(Long id,
+                                          String tipoDocumento,
+                                          String numeroDocumento,
+                                          String fullName,
+                                          String telefono,
+                                          String email,
+                                          String telefono2,
+                                          String ciudad,
+                                          String canalPreferido,
+                                          boolean aceptaWhatsApp,
+                                          boolean aceptaSms,
+                                          boolean aceptaEmail,
+                                          LocalDateTime updatedAt) {
+        Client client = new Client(id, tipoDocumento, numeroDocumento, fullName, telefono, email,
+                telefono2, ciudad, canalPreferido, aceptaWhatsApp, aceptaSms, aceptaEmail);
         client.updatedAt = updatedAt;
         return client;
     }
@@ -107,6 +137,34 @@ public class Client {
     public void updateContact(String telefono, String email) {
         this.telefono = telefono;
         this.email = email;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Actualiza todos los campos modificables provenientes de una carga batch.
+     * Aplica las reglas de negocio del proceso de importación:
+     * nombre, teléfonos, email, ciudad y canal preferido.
+     * Los campos opcionales solo se sobreescriben si vienen con valor.
+     *
+     * @param nombre         nombre completo actualizado
+     * @param telefono1      teléfono principal
+     * @param email          correo electrónico (nullable)
+     * @param telefono2      teléfono secundario (nullable)
+     * @param ciudad         ciudad (nullable)
+     * @param canalPreferido canal de contacto preferido (nullable)
+     */
+    public void updateFromBatch(String nombre,
+                                 String telefono1,
+                                 String email,
+                                 String telefono2,
+                                 String ciudad,
+                                 String canalPreferido) {
+        this.fullName = nombre;
+        this.telefono = telefono1;
+        this.email    = email;
+        if (telefono2    != null) this.telefono2    = telefono2;
+        if (ciudad       != null) this.ciudad       = ciudad;
+        if (canalPreferido != null) this.canalPreferido = canalPreferido;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -176,6 +234,18 @@ public class Client {
      */
     public String getEmail() {
         return email;
+    }
+
+    public String getTelefono2() {
+        return telefono2;
+    }
+
+    public String getCiudad() {
+        return ciudad;
+    }
+
+    public String getCanalPreferido() {
+        return canalPreferido;
     }
 
     /**

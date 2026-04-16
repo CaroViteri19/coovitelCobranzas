@@ -110,15 +110,19 @@ public class ObligationJpaEntity {
 
     public static ObligationJpaEntity fromDomain(Obligation obligacion) {
         ObligationJpaEntity entity = new ObligationJpaEntity();
-        entity.id = obligacion.getId();
-        entity.customerId = obligacion.getCustomerId();
+        entity.id             = obligacion.getId();
+        entity.customerId     = obligacion.getCustomerId();
         entity.obligationNumber = obligacion.getObligationNumber();
-        entity.totalBalance = obligacion.getTotalBalance();
+        entity.totalBalance   = obligacion.getTotalBalance();
         entity.overdueBalance = obligacion.getOverdueBalance();
-        entity.overdueDays = obligacion.getDelinquencyDays();
-        entity.dueDate = obligacion.getDueDate();
-        entity.status = mapStatus(obligacion.getStatus());
-        entity.createdAt = obligacion.getUpdatedAt();
+        entity.overdueDays    = obligacion.getDelinquencyDays();
+        entity.dueDate        = obligacion.getDueDate();
+        entity.status         = mapStatus(obligacion.getStatus());
+        entity.createdAt      = obligacion.getUpdatedAt();
+        // Campos extendidos — ingesta batch
+        entity.segmento       = obligacion.getSegmento();
+        entity.producto       = obligacion.getProducto();
+        entity.codigoAgente   = obligacion.getCodigoAgente();
         return entity;
     }
 
