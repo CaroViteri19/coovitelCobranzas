@@ -161,13 +161,14 @@ CREATE TABLE `auditoria_eventos` (
   `rol_usuario` VARCHAR(80),
   `origen` VARCHAR(30) DEFAULT 'SYSTEM',
   `modulo` VARCHAR(50) DEFAULT 'GENERAL',
-  `correlation_id` VARCHAR(100),
+  `id_auditoria` VARCHAR(100),
   `detalle` VARCHAR(1000),
   `created_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `idx_auditoria_entidad` (`entidad`, `entidad_id`),
   INDEX `idx_auditoria_created` (`created_at`),
-  INDEX `idx_auditoria_modulo_accion` (`modulo`, `accion`)
+  INDEX `idx_auditoria_modulo_accion` (`modulo`, `accion`),
+  INDEX `idx_auditoria_id_auditoria` (`id_auditoria`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================

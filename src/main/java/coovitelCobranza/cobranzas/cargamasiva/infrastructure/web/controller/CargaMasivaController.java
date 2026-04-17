@@ -54,6 +54,8 @@ public class CargaMasivaController {
         validateFileNotEmpty(file);
         validateFileExtension(file);
 
+        // El correlationId se genera dentro del service a través de AuditContext,
+        // de modo que todos los eventos de auditoría del flujo lo hereden automáticamente.
         String uploadedBy = jwt != null ? jwt.getSubject() : "anonymous";
         CargaMasivaResultResponse result = service.procesarCarga(file, uploadedBy);
 

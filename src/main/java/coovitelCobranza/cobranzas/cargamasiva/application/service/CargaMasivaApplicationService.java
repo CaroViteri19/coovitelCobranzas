@@ -1,5 +1,6 @@
 package coovitelCobranza.cobranzas.cargamasiva.application.service;
 
+import coovitelCobranza.cobranzas.auditoria.domain.context.AuditContext;
 import coovitelCobranza.cobranzas.auditoria.domain.service.AuditService;
 import coovitelCobranza.cobranzas.cargamasiva.application.dto.AsociadoRowDTO;
 import coovitelCobranza.cobranzas.cargamasiva.application.dto.CargaMasivaResultResponse;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Servicio de aplicación orquestador del proceso de carga masiva de asociados.
@@ -93,6 +95,14 @@ public class CargaMasivaApplicationService {
      * con upsert en {@code Cliente} y {@code Obligacion}; los errores individuales
      * se recolectan y se devuelven en el resumen sin cancelar el proceso completo.
      *
+     * <p><b>Correlation ID:</b> al inicio se genera un UUID único que queda
+     * almacenado en {@link AuditContext} (basado en {@link ThreadLocal}). Todos
+     * los eventos de auditoría emitidos durante la ejecución lo heredan
+     * automáticamente, permitiendo filtrar en BD por un único
+     * {@code id_auditoria} todos los eventos de este flujo (UPLOAD_STARTED,
+     * UPLOAD_FAILED/UPLOAD_PARTIAL/UPLOAD_SUCCESS). El contexto se limpia en un
+     * bloque {@code finally} para evitar fugas en el pool de hilos.
+     *
      * @param file       archivo CSV o TXT con los registros a importar
      * @param uploadedBy nombre/ID del usuario que ejecuta la carga (para auditoría)
      * @return resumen con estadísticas del proceso
@@ -102,74 +112,82 @@ public class CargaMasivaApplicationService {
     public CargaMasivaResultResponse procesarCarga(MultipartFile file, String uploadedBy) {
         String fileName = sanitizeFileName(file.getOriginalFilename());
 
-        // ── PASO 1: Auditoría — inicio (transacción propia, siempre se guarda) ─
-        auditService.registerEvent(
-                "INTEGRATION", "CARGA_MASIVA", null,
-                "UPLOAD_STARTED", uploadedBy, "SISTEMA", "WEB",
-                "Inicio de carga masiva del archivo '%s' (%d bytes)".formatted(fileName, file.getSize()),
-                null
-        );
+        // ── Se genera el correlation ID del flujo completo ────────────────────
+        // Un único UUID por ejecución del método, compartido por todos los
+        // eventos de auditoría que se registren dentro.
+        UUID correlationId = AuditContext.startNewContext();
+        log.info("[CARGA-MASIVA] Iniciando: archivo='{}', usuario='{}', tamaño={}B, correlationId={}",
+                fileName, uploadedBy, file.getSize(), correlationId);
 
-        log.info("[CARGA-MASIVA] Iniciando: archivo='{}', usuario='{}', tamaño={}B",
-                fileName, uploadedBy, file.getSize());
-
-        // ── PASO 2: Parse streaming (CSV o TXT según extensión) ───────────────
-        List<AsociadoRowDTO> rows = parsearArchivo(file, fileName);
-        log.info("[CARGA-MASIVA] Parseadas {} filas de '{}'", rows.size(), fileName);
-
-        // ── PASO 3: Validación estructural (servicio de dominio) ──────────────
-        List<RowErrorDTO> erroresValidacion = new ArrayList<>(validationService.validateAll(rows));
-
-        if (!erroresValidacion.isEmpty()) {
-            log.warn("[CARGA-MASIVA] Validación fallida: {} errores en '{}'",
-                    erroresValidacion.size(), fileName);
-
-            // Auditoría de fallo — en su propia transacción, NO se revierte con el rollback principal
+        try {
+            // ── PASO 1: Auditoría — inicio (transacción propia) ───────────────
             auditService.registerEvent(
                     "INTEGRATION", "CARGA_MASIVA", null,
-                    "UPLOAD_FAILED", uploadedBy, "SISTEMA", "WEB",
-                    "Archivo '%s' rechazado: %d errores de validación en %d filas"
-                            .formatted(fileName, erroresValidacion.size(), rows.size()),
-                    null
+                    "UPLOAD_STARTED", uploadedBy, "SISTEMA", "WEB",
+                    "Inicio de carga masiva del archivo '%s' (%d bytes)"
+                            .formatted(fileName, file.getSize())
             );
-            throw new CargaMasivaException(erroresValidacion, rows.size(), fileName);
-        }
 
-        // ── PASO 4: Upsert fila por fila ──────────────────────────────────────
-        // Cache en memoria: numDocumento → clientId  (evita N+1 queries)
-        Map<String, Long> cacheClientes = new HashMap<>();
+            // ── PASO 2: Parse streaming (CSV o TXT según extensión) ───────────
+            List<AsociadoRowDTO> rows = parsearArchivo(file, fileName);
+            log.info("[CARGA-MASIVA] Parseadas {} filas de '{}'", rows.size(), fileName);
 
-        List<RowErrorDTO> erroresFila = new ArrayList<>();
-        int exitosos = 0;
+            // ── PASO 3: Validación estructural (servicio de dominio) ──────────
+            List<RowErrorDTO> erroresValidacion = new ArrayList<>(validationService.validateAll(rows));
 
-        for (AsociadoRowDTO row : rows) {
-            try {
-                Long clienteId = upsertCliente(row, cacheClientes);
-                upsertObligacion(row, clienteId);
-                exitosos++;
-            } catch (Exception ex) {
-                log.warn("[CARGA-MASIVA] Error en fila {}, doc='{}': {}",
-                        row.rowNumber(), row.numDocumento(), ex.getMessage());
-                erroresFila.add(RowErrorDTO.row(row.rowNumber(),
-                        "Error procesando documento '%s': %s"
-                                .formatted(row.numDocumento(), ex.getMessage())));
+            if (!erroresValidacion.isEmpty()) {
+                log.warn("[CARGA-MASIVA] Validación fallida: {} errores en '{}'",
+                        erroresValidacion.size(), fileName);
+
+                // Auditoría de fallo — transacción propia, sobrevive al rollback
+                auditService.registerEvent(
+                        "INTEGRATION", "CARGA_MASIVA", null,
+                        "UPLOAD_FAILED", uploadedBy, "SISTEMA", "WEB",
+                        "Archivo '%s' rechazado: %d errores de validación en %d filas"
+                                .formatted(fileName, erroresValidacion.size(), rows.size())
+                );
+                throw new CargaMasivaException(erroresValidacion, rows.size(), fileName);
             }
+
+            // ── PASO 4: Upsert fila por fila ──────────────────────────────────
+            // Cache en memoria: numDocumento → clientId (evita N+1 queries)
+            Map<String, Long> cacheClientes = new HashMap<>();
+
+            List<RowErrorDTO> erroresFila = new ArrayList<>();
+            int exitosos = 0;
+
+            for (AsociadoRowDTO row : rows) {
+                try {
+                    Long clienteId = upsertCliente(row, cacheClientes);
+                    upsertObligacion(row, clienteId);
+                    exitosos++;
+                } catch (Exception ex) {
+                    log.warn("[CARGA-MASIVA] Error en fila {}, doc='{}': {}",
+                            row.rowNumber(), row.numDocumento(), ex.getMessage());
+                    erroresFila.add(RowErrorDTO.row(row.rowNumber(),
+                            "Error procesando documento '%s': %s"
+                                    .formatted(row.numDocumento(), ex.getMessage())));
+                }
+            }
+
+            // ── PASO 5: Auditoría — resultado final ───────────────────────────
+            String accion  = erroresFila.isEmpty() ? "UPLOAD_SUCCESS" : "UPLOAD_PARTIAL";
+            String detalle = "Archivo '%s': %d/%d registros procesados, %d errores."
+                    .formatted(fileName, exitosos, rows.size(), erroresFila.size());
+
+            auditService.registerEvent(
+                    "INTEGRATION", "CARGA_MASIVA", null,
+                    accion, uploadedBy, "SISTEMA", "WEB", detalle
+            );
+
+            log.info("[CARGA-MASIVA] Finalizado: archivo='{}', exitosos={}, fallidos={}, total={}",
+                    fileName, exitosos, erroresFila.size(), rows.size());
+
+            return CargaMasivaResultResponse.partial(rows.size(), exitosos, fileName, erroresFila);
+        } finally {
+            // SIEMPRE limpiar el ThreadLocal para evitar fugas en el pool de hilos.
+            AuditContext.clear();
         }
-
-        // ── PASO 5: Auditoría — resultado final ───────────────────────────────
-        String accion  = erroresFila.isEmpty() ? "UPLOAD_SUCCESS" : "UPLOAD_PARTIAL";
-        String detalle = "Archivo '%s': %d/%d registros procesados, %d errores."
-                .formatted(fileName, exitosos, rows.size(), erroresFila.size());
-
-        auditService.registerEvent(
-                "INTEGRATION", "CARGA_MASIVA", null,
-                accion, uploadedBy, "SISTEMA", "WEB", detalle, null
-        );
-
-        log.info("[CARGA-MASIVA] Finalizado: archivo='{}', exitosos={}, fallidos={}, total={}",
-                fileName, exitosos, erroresFila.size(), rows.size());
-
-        return CargaMasivaResultResponse.partial(rows.size(), exitosos, fileName, erroresFila);
     }
 
     // ── Upsert Cliente ────────────────────────────────────────────────────────

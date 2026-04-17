@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -120,15 +120,21 @@ public class SecurityConfig {
     }
 
     /**
-     * Obtiene el gestor de autenticación de Spring Security.
+     * Expone el {@link AuthenticationManager} como bean reutilizable por
+     * {@code AuthApplicationService} (inyectado por constructor).
      *
-     * @param authenticationConfiguration Configuración de autenticación.
-     * @return Gestor de autenticación.
-     * @throws Exception Si ocurre un error al obtener el gestor.
+     * <p>Se construye directamente con {@link ProviderManager} envolviendo el
+     * {@link AuthenticationProvider} ya expuesto arriba. Esta forma es la
+     * recomendada en Spring Security 6 / Spring Boot 3 y evita la dependencia
+     * circular que aparece al derivar el manager desde
+     * {@code AuthenticationConfiguration.getAuthenticationManager()} cuando en
+     * la misma clase coexisten {@code SecurityFilterChain} y
+     * {@code AuthenticationProvider} (ciclo que Spring reporta de forma
+     * confusa como "bean of type AuthenticationManager could not be found").
      */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationProvider authenticationProvider) {
+        return new ProviderManager(authenticationProvider);
     }
 
     /**

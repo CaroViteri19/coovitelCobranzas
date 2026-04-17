@@ -33,7 +33,7 @@ public class AuditEventJpaEntity {
     @Column(name = "modulo", length = 50)
     private String module;
 
-    @Column(name = "correlation_id", length = 100)
+    @Column(name = "id_auditoria", length = 100)
     private String correlationId;
 
     @Column(name = "detalle", length = 1000)
@@ -81,15 +81,7 @@ public class AuditEventJpaEntity {
         return entity;
     }
 
-    public String getEntidad() {
-        return entity;
-    }
-
     public void setEntity(String entity) {
-        this.entity = entity;
-    }
-
-    public void setEntidad(String entity) {
         this.entity = entity;
     }
 
@@ -97,15 +89,7 @@ public class AuditEventJpaEntity {
         return entityId;
     }
 
-    public Long getEntidadId() {
-        return entityId;
-    }
-
     public void setEntityId(Long entityId) {
-        this.entityId = entityId;
-    }
-
-    public void setEntidadId(Long entityId) {
         this.entityId = entityId;
     }
 
@@ -121,15 +105,7 @@ public class AuditEventJpaEntity {
         return user;
     }
 
-    public String getUsuario() {
-        return user;
-    }
-
     public void setUser(String user) {
-        this.user = user;
-    }
-
-    public void setUsuario(String user) {
         this.user = user;
     }
 
@@ -169,15 +145,7 @@ public class AuditEventJpaEntity {
         return detail;
     }
 
-    public String getDetalle() {
-        return detail;
-    }
-
     public void setDetail(String detail) {
-        this.detail = detail;
-    }
-
-    public void setDetalle(String detail) {
         this.detail = detail;
     }
 
