@@ -4,8 +4,11 @@ import coovitelCobranza.cobranzas.cliente.domain.model.Client;
 import coovitelCobranza.cobranzas.cliente.domain.repository.ClientRepository;
 import coovitelCobranza.cobranzas.cliente.infrastructure.persistence.entity.ClientJpaEntity;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -37,6 +40,21 @@ public class ClientRepositoryImpl implements ClientRepository {
     public Optional<Client> findByDocumento(String tipoDocumento, String numeroDocumento) {
         return jpaRepository.findByTipoDocumentoAndNumeroDocumento(tipoDocumento, numeroDocumento)
                 .map(this::entityToClient);
+    }
+
+    @Override
+    public List<Client> findAll(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+        return jpaRepository.findAll(pageRequest)
+                .getContent()
+                .stream()
+                .map(this::entityToClient)
+                .toList();
+    }
+
+    @Override
+    public long count() {
+        return jpaRepository.count();
     }
 
     // ── Mapeo Dominio → JPA ───────────────────────────────────────────────────
