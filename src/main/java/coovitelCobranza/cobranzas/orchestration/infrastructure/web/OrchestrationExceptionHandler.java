@@ -1,5 +1,7 @@
 package coovitelCobranza.cobranzas.orchestration.infrastructure.web;
 
+import coovitelCobranza.cobranzas.orchestration.application.exception.CaseForOrchestrationNotFoundException;
+import coovitelCobranza.cobranzas.orchestration.application.exception.ClientForOrchestrationNotFoundException;
 import coovitelCobranza.cobranzas.orchestration.application.exception.OrchestrationBusinessException;
 import coovitelCobranza.cobranzas.orchestration.application.exception.OrchestrationNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,26 @@ public class OrchestrationExceptionHandler {
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
         body.put("error", "Orchestration not found");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(CaseForOrchestrationNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleCaseNotFound(CaseForOrchestrationNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Case not found");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(ClientForOrchestrationNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleClientNotFound(ClientForOrchestrationNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Client not found");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }

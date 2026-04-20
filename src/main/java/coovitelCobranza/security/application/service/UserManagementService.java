@@ -5,8 +5,8 @@ import coovitelCobranza.security.application.dto.UpdateUserStatusRequest;
 import coovitelCobranza.security.application.dto.UserSummaryResponse;
 import coovitelCobranza.config.exception.ConflictException;
 import coovitelCobranza.config.exception.ResourceNotFoundException;
-import coovitelCobranza.security.persistence.entity.RoleJpaEntity;
 import coovitelCobranza.security.persistence.entity.UserJpaEntity;
+
 import coovitelCobranza.security.persistence.repository.RoleJpaRepository;
 import coovitelCobranza.security.persistence.repository.UserJpaRepository;
 import org.springframework.stereotype.Service;

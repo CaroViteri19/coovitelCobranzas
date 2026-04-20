@@ -46,9 +46,38 @@ app:
       expiration-minutes: 480
     bootstrap:
       enabled: true
-      admin-username: admin
+      admin-username: ADMINISTRATOR
       admin-email: admin@coovitel.local
       admin-password: Admin123!
       admin-full-name: System Administrator
       admin-document-type: CC
       admin-document: 1000000000
+
+  # Módulo de pagos — selecciona la pasarela y su configuración.
+  payments:
+    # Proveedor activo: mock | wompi
+    provider: ${PAYMENTS_PROVIDER:mock}
+    mock:
+      base-url: ${MOCK_PAYMENTS_URL:http://localhost:8080/mock-checkout}
+      expiration-minutes: 30
+    wompi:
+      base-url: ${WOMPI_BASE_URL:https://sandbox.wompi.co/v1}
+      public-key: ${WOMPI_PUBLIC_KEY:}
+      private-key: ${WOMPI_PRIVATE_KEY:}
+      events-secret: ${WOMPI_EVENTS_SECRET:}
+      redirect-url: ${WOMPI_REDIRECT_URL:http://localhost:4200/payment/result}
+
+  # Módulo de orquestación de canales — proveedores SMS/Email/WhatsApp.
+  # Por ahora todos en modo stub (loguean el envío pero no hacen requests externos).
+  orchestration:
+    sms:
+      provider: ${SMS_PROVIDER:stub}
+    email:
+      provider: ${EMAIL_PROVIDER:stub}
+      from-address: ${EMAIL_FROM:no-reply@coovitel.local}
+    whatsapp:
+      provider: ${WHATSAPP_PROVIDER:stub}
+    payment-link:
+      # URL base del checkout que se sustituye en las plantillas cuando se
+      # manda el link al cliente. Debe coincidir con lo que devuelve la pasarela.
+      checkout-base-url: ${ORCH_CHECKOUT_BASE_URL:http://localhost:4200/checkout}

@@ -1,11 +1,19 @@
 package coovitelCobranza.cobranzas.payment.application.service;
 
+import coovitelCobranza.cobranzas.obligation.domain.model.Obligation;
+import coovitelCobranza.cobranzas.obligation.domain.repository.ObligationRepository;
 import coovitelCobranza.cobranzas.payment.application.dto.ConfirmPaymentRequest;
 import coovitelCobranza.cobranzas.payment.application.dto.CreatePaymentRequest;
+import coovitelCobranza.cobranzas.payment.application.dto.GenerateLinkRequest;
+import coovitelCobranza.cobranzas.payment.application.dto.GenerateLinkResponse;
 import coovitelCobranza.cobranzas.payment.application.dto.PaymentResponse;
+import coovitelCobranza.cobranzas.payment.application.dto.WebhookNotificationRequest;
+import coovitelCobranza.cobranzas.payment.application.exception.ObligationForPaymentNotFoundException;
 import coovitelCobranza.cobranzas.payment.application.exception.PaymentBusinessException;
 import coovitelCobranza.cobranzas.payment.application.exception.PaymentNotFoundException;
 import coovitelCobranza.cobranzas.payment.domain.event.PaymentConfirmedEvent;
+import coovitelCobranza.cobranzas.payment.domain.gateway.PaymentLinkResponse;
+import coovitelCobranza.cobranzas.payment.domain.gateway.PaymentProvider;
 import coovitelCobranza.cobranzas.payment.domain.model.Payment;
 import coovitelCobranza.cobranzas.payment.domain.repository.PaymentRepository;
 import coovitelCobranza.cobranzas.shared.domain.event.DomainEvent;
@@ -19,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,14 +48,24 @@ class PaymentApplicationServiceTest {
     private PaymentRepository paymentRepository;
 
     @Mock
+    private ObligationRepository obligationRepository;
+
+    @Mock
+    private PaymentProvider paymentProvider;
+
+    @Mock
     private DomainEventPublisher eventPublisher;
 
     private PaymentApplicationService service;
 
     @BeforeEach
     void setUp() {
-        service = new PaymentApplicationService(paymentRepository, eventPublisher);
+        service = new PaymentApplicationService(paymentRepository, obligationRepository, paymentProvider, eventPublisher);
     }
+
+    // -------------------------------------------------------------------------
+    // createPayment
+    // -------------------------------------------------------------------------
 
     @Test
     @DisplayName("Create payment returns PENDING response when data is valid")
@@ -135,8 +155,12 @@ class PaymentApplicationServiceTest {
         assertThrows(PaymentBusinessException.class, () -> service.createPayment(request));
     }
 
+    // -------------------------------------------------------------------------
+    // confirmPayment (now atomic: también actualiza Obligation)
+    // -------------------------------------------------------------------------
+
     @Test
-    @DisplayName("Confirm payment changes status and publishes PaymentConfirmed event")
+    @DisplayName("Confirm payment changes status, applies payment on obligation and publishes event")
     void confirmPaymentSuccessPublishesEvent() {
         Payment pendingPayment = Payment.reconstruct(
                 8L,
@@ -149,13 +173,24 @@ class PaymentApplicationServiceTest {
                 LocalDateTime.now()
         );
 
+        Obligation obligation = Obligation.reconstruct(
+                20L, 100L, "OB-20",
+                BigDecimal.valueOf(75000), BigDecimal.ZERO, 0,
+                Obligation.StatusObligation.AL_DIA, LocalDate.now(), LocalDateTime.now()
+        );
+
         when(paymentRepository.findByExternalReference("REF-200")).thenReturn(Optional.of(pendingPayment));
+        when(obligationRepository.findById(20L)).thenReturn(Optional.of(obligation));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(obligationRepository.save(any(Obligation.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         PaymentResponse response = service.confirmPayment(new ConfirmPaymentRequest("REF-200"));
 
         assertEquals("CONFIRMED", response.status());
         assertNotNull(response.confirmedAt());
+        // La obligación debió quedar saldada
+        assertEquals(0, obligation.getTotalBalance().compareTo(BigDecimal.ZERO));
+        assertEquals(Obligation.StatusObligation.CANCELADA, obligation.getStatus());
 
         ArgumentCaptor<DomainEvent> eventCaptor = ArgumentCaptor.forClass(DomainEvent.class);
         verify(eventPublisher).publish(eventCaptor.capture());
@@ -186,6 +221,10 @@ class PaymentApplicationServiceTest {
         assertThrows(PaymentBusinessException.class,
                 () -> service.confirmPayment(new ConfirmPaymentRequest("REF-201")));
     }
+
+    // -------------------------------------------------------------------------
+    // rejectPayment
+    // -------------------------------------------------------------------------
 
     @Test
     @DisplayName("Reject payment changes status to REJECTED")
@@ -237,5 +276,138 @@ class PaymentApplicationServiceTest {
         assertEquals("REF-L1", result.get(0).externalReference());
         assertEquals("REF-L2", result.get(1).externalReference());
     }
-}
 
+    // -------------------------------------------------------------------------
+    // generateLink
+    // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Generate link delega en el PaymentProvider y persiste Payment PENDING")
+    void generateLinkSuccess() {
+        Obligation obligation = Obligation.reconstruct(
+                50L, 500L, "OB-50",
+                BigDecimal.valueOf(250000), BigDecimal.valueOf(50000), 15,
+                Obligation.StatusObligation.EN_MORA, LocalDate.now(), LocalDateTime.now()
+        );
+
+        PaymentLinkResponse fakeLink = new PaymentLinkResponse(
+                "https://checkout.pasarela.com/s/abc",
+                "session-token-xyz",
+                LocalDateTime.now().plusMinutes(30),
+                "GW-REF-001"
+        );
+
+        when(obligationRepository.findById(50L)).thenReturn(Optional.of(obligation));
+        when(paymentProvider.generateLink(obligation)).thenReturn(fakeLink);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> {
+            Payment p = invocation.getArgument(0);
+            return Payment.reconstruct(99L, p.getObligationId(), p.getAmount(),
+                    p.getExternalReference(), p.getMethod(), p.getStatus(),
+                    p.getConfirmedAt(), p.getCreatedAt());
+        });
+
+        GenerateLinkResponse response = service.generateLink(
+                new GenerateLinkRequest(50L, Payment.PaymentMethod.PSE));
+
+        assertEquals(99L, response.paymentId());
+        assertEquals("GW-REF-001", response.gatewayReference());
+        assertEquals("https://checkout.pasarela.com/s/abc", response.paymentUrl());
+    }
+
+    @Test
+    @DisplayName("Generate link falla si la obligación no existe")
+    void generateLinkObligationNotFound() {
+        when(obligationRepository.findById(404L)).thenReturn(Optional.empty());
+        assertThrows(ObligationForPaymentNotFoundException.class,
+                () -> service.generateLink(new GenerateLinkRequest(404L, Payment.PaymentMethod.PSE)));
+    }
+
+    @Test
+    @DisplayName("Generate link falla si la obligación ya fue cancelada")
+    void generateLinkObligationAlreadyPaid() {
+        Obligation paid = Obligation.reconstruct(
+                77L, 700L, "OB-77",
+                BigDecimal.ZERO, BigDecimal.ZERO, 0,
+                Obligation.StatusObligation.CANCELADA, LocalDate.now(), LocalDateTime.now()
+        );
+        when(obligationRepository.findById(77L)).thenReturn(Optional.of(paid));
+
+        assertThrows(PaymentBusinessException.class,
+                () -> service.generateLink(new GenerateLinkRequest(77L, Payment.PaymentMethod.PSE)));
+    }
+
+    // -------------------------------------------------------------------------
+    // processWebhook
+    // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Webhook APROBADO aplica pago sobre obligación y publica evento")
+    void webhookApprovedAppliesAtomically() {
+        Payment pending = Payment.reconstruct(
+                1L, 10L, BigDecimal.valueOf(100000), "GW-1",
+                Payment.PaymentMethod.PSE, Payment.PaymentStatus.PENDING, null, LocalDateTime.now()
+        );
+        Obligation obligation = Obligation.reconstruct(
+                10L, 100L, "OB-10",
+                BigDecimal.valueOf(100000), BigDecimal.valueOf(20000), 10,
+                Obligation.StatusObligation.EN_MORA, LocalDate.now(), LocalDateTime.now()
+        );
+
+        when(paymentRepository.findByExternalReference("GW-1")).thenReturn(Optional.of(pending));
+        when(obligationRepository.findById(10L)).thenReturn(Optional.of(obligation));
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(obligationRepository.save(any(Obligation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentResponse response = service.processWebhook(
+                new WebhookNotificationRequest("GW-1", "APPROVED", BigDecimal.valueOf(100000), null));
+
+        assertEquals("CONFIRMED", response.status());
+        assertEquals(Obligation.StatusObligation.CANCELADA, obligation.getStatus());
+        verify(eventPublisher).publish(any(PaymentConfirmedEvent.class));
+    }
+
+    @Test
+    @DisplayName("Webhook RECHAZADO marca el pago como REJECTED sin tocar la obligación")
+    void webhookRejectedMarksPaymentOnly() {
+        Payment pending = Payment.reconstruct(
+                2L, 11L, BigDecimal.valueOf(50000), "GW-2",
+                Payment.PaymentMethod.CARD, Payment.PaymentStatus.PENDING, null, LocalDateTime.now()
+        );
+        when(paymentRepository.findByExternalReference("GW-2")).thenReturn(Optional.of(pending));
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PaymentResponse response = service.processWebhook(
+                new WebhookNotificationRequest("GW-2", "DECLINED", null, null));
+
+        assertEquals("REJECTED", response.status());
+        verify(obligationRepository, never()).findById(any());
+        verify(eventPublisher, never()).publish(any());
+    }
+
+    @Test
+    @DisplayName("Webhook duplicado (pago ya confirmado) es idempotente y no reaplica")
+    void webhookDuplicateIsIdempotent() {
+        Payment alreadyConfirmed = Payment.reconstruct(
+                3L, 12L, BigDecimal.valueOf(30000), "GW-3",
+                Payment.PaymentMethod.PSE, Payment.PaymentStatus.CONFIRMED,
+                LocalDateTime.now(), LocalDateTime.now().minusMinutes(5)
+        );
+        when(paymentRepository.findByExternalReference("GW-3")).thenReturn(Optional.of(alreadyConfirmed));
+
+        PaymentResponse response = service.processWebhook(
+                new WebhookNotificationRequest("GW-3", "APPROVED", null, null));
+
+        assertEquals("CONFIRMED", response.status());
+        verify(paymentRepository, never()).save(any());
+        verify(obligationRepository, never()).findById(any());
+        verify(eventPublisher, never()).publish(any());
+    }
+
+    @Test
+    @DisplayName("Webhook con referencia desconocida lanza PaymentNotFoundException")
+    void webhookReferenceNotFound() {
+        when(paymentRepository.findByExternalReference("GW-404")).thenReturn(Optional.empty());
+        assertThrows(PaymentNotFoundException.class, () -> service.processWebhook(
+                new WebhookNotificationRequest("GW-404", "APPROVED", null, null)));
+    }
+}

@@ -1,14 +1,11 @@
 package coovitelCobranza.cobranzas.interaction.infrastructure.web;
 
-import coovitelCobranza.cobranzas.interaction.application.dto.UpdateResultInteractionRequest;
 import coovitelCobranza.cobranzas.interaction.application.dto.CreateInteractionRequest;
 import coovitelCobranza.cobranzas.interaction.application.dto.GetInteractionByIdRequest;
 import coovitelCobranza.cobranzas.interaction.application.dto.InteractionResponse;
 import coovitelCobranza.cobranzas.interaction.application.dto.ListInteractionsByCaseRequest;
 import coovitelCobranza.cobranzas.interaction.application.dto.UpdateInteractionResultRequest;
 import coovitelCobranza.cobranzas.interaction.application.service.InteractionApplicationService;
-import coovitelCobranza.cobranzas.interaction.application.dto.CreateInteractionRequest;
-import coovitelCobranza.cobranzas.interaction.application.dto.InteractionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

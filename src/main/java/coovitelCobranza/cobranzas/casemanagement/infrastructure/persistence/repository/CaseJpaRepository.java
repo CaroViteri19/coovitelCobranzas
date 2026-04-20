@@ -2,7 +2,6 @@ package coovitelCobranza.cobranzas.casemanagement.infrastructure.persistence.rep
 
 import coovitelCobranza.cobranzas.casemanagement.domain.model.Case;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import coovitelCobranza.cobranzas.casemanagement.infrastructure.persistence.entity.CaseJpaEntity;

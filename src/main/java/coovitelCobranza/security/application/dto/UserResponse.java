@@ -1,10 +1,6 @@
 package coovitelCobranza.security.application.dto;
 
-
-
 import java.time.LocalDateTime;
-import java.util.Date;
-
 
 /**
  * @param id

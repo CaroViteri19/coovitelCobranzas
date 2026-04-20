@@ -5,7 +5,6 @@ import coovitelCobranza.security.application.dto.UserResponse;
 import coovitelCobranza.security.application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import coovitelCobranza.security.application.dto.UpdateUserStatusRequest;
-import coovitelCobranza.security.application.dto.UserSummaryResponse;
 import coovitelCobranza.security.application.service.UserManagementService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

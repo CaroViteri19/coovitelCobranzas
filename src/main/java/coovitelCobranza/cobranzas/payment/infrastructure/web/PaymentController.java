@@ -2,12 +2,15 @@ package coovitelCobranza.cobranzas.payment.infrastructure.web;
 
 import coovitelCobranza.cobranzas.payment.application.dto.ConfirmPaymentRequest;
 import coovitelCobranza.cobranzas.payment.application.dto.CreatePaymentRequest;
+import coovitelCobranza.cobranzas.payment.application.dto.GenerateLinkRequest;
+import coovitelCobranza.cobranzas.payment.application.dto.GenerateLinkResponse;
 import coovitelCobranza.cobranzas.payment.application.dto.GetPaymentByIdRequest;
 import coovitelCobranza.cobranzas.payment.application.dto.GetPaymentByReferenceRequest;
 import coovitelCobranza.cobranzas.payment.application.dto.ListPaymentsByObligationRequest;
 import coovitelCobranza.cobranzas.payment.application.dto.PaymentResponse;
 import coovitelCobranza.cobranzas.payment.application.dto.RejectPaymentRequest;
 import coovitelCobranza.cobranzas.payment.application.service.PaymentApplicationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +33,18 @@ public class PaymentController {
     @PostMapping
     public ResponseEntity<PaymentResponse> create(@RequestBody CreatePaymentRequest request) {
         PaymentResponse response = paymentApplicationService.createPayment(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Solicita a la pasarela un link de pago para una obligación y persiste un
+     * Payment en estado PENDING. El frontend puede compartir el link con el
+     * cliente por cualquier canal.
+     */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
+    @PostMapping("/generate-link")
+    public ResponseEntity<GenerateLinkResponse> generateLink(@Valid @RequestBody GenerateLinkRequest request) {
+        GenerateLinkResponse response = paymentApplicationService.generateLink(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

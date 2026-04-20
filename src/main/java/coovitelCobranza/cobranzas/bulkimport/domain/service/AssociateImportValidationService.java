@@ -39,7 +39,7 @@ public class AssociateImportValidationService {
     private static final Pattern FECHA_PATTERN =
             Pattern.compile("^\\d{8}$"); // YYYYMMDD
 
-    private static final int BATCH_SIZE     = 500;
+
     private static final int MAX_FILE_ROWS  = 50_000;
 
     // ── API pública ───────────────────────────────────────────────────────────

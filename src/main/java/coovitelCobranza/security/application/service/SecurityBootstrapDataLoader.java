@@ -60,10 +60,10 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
     }
 
     private RoleJpaEntity ensureAdminRole() {
-        return roleRepository.findByName("ADMIN")
+        return roleRepository.findByName("ADMINISTRATOR")
                 .orElseGet(() -> {
                     RoleJpaEntity role = new RoleJpaEntity();
-                    role.setName("ADMIN");
+                    role.setName("ADMINISTRATOR");
                     role.setDescription("Acceso total al sistema");
                     role.setCreatedAt(LocalDateTime.now());
                     return roleRepository.save(role);
@@ -94,23 +94,23 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
         String fullName = bootstrapProperties.getAdminFullName() == null ? "System Administrator" : bootstrapProperties.getAdminFullName().trim();
         String[] nameParts = splitFullName(fullName);
 
-        UserJpaEntity admin = new UserJpaEntity();
-        admin.setUsername(username);
-        admin.setEmail(email);
-        admin.setPassword(passwordEncoder.encode(bootstrapProperties.getAdminPassword()));
-        admin.setFullName(fullName);
-        admin.setFirstName(nameParts[0]);
-        admin.setLastName(nameParts[1]);
-        admin.setTypeDocument(adminDocumentType);
-        admin.setDocument(bootstrapProperties.getAdminDocument());
-        admin.setEnabled(true);
-        admin.setLocked(false);
-        admin.setCreatedAt(LocalDateTime.now());
-        admin.setUpdatedAt(LocalDateTime.now());
-        admin.setRoles(adminRole);
+        UserJpaEntity administrator = new UserJpaEntity();
+        administrator.setUsername(username);
+        administrator.setEmail(email);
+        administrator.setPassword(passwordEncoder.encode(bootstrapProperties.getAdminPassword()));
+        administrator.setFullName(fullName);
+        administrator.setFirstName(nameParts[0]);
+        administrator.setLastName(nameParts[1]);
+        administrator.setTypeDocument(adminDocumentType);
+        administrator.setDocument(bootstrapProperties.getAdminDocument());
+        administrator.setEnabled(true);
+        administrator.setLocked(false);
+        administrator.setCreatedAt(LocalDateTime.now());
+        administrator.setUpdatedAt(LocalDateTime.now());
+        administrator.setRoles(adminRole);
 
         try {
-            userRepository.save(admin);
+            userRepository.save(administrator);
             log.info("Usuario administrador genérico creado: {} ({})", username, email);
         } catch (DataIntegrityViolationException ex) {
             log.warn("No se pudo crear el usuario administrador genérico: {}", ex.getMessage());

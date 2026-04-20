@@ -7,10 +7,8 @@ import coovitelCobranza.security.application.exception.UserAlreadyExistsExceptio
 import coovitelCobranza.security.config.JwtProperties;
 import coovitelCobranza.security.persistence.entity.RoleJpaEntity;
 import coovitelCobranza.security.persistence.entity.TypeDocumentEntity;
-import coovitelCobranza.security.persistence.entity.TypeDocumentEntity;
 import coovitelCobranza.security.persistence.entity.UserJpaEntity;
 import coovitelCobranza.security.persistence.repository.RoleJpaRepository;
-import coovitelCobranza.security.persistence.repository.TypeDocumentRepository;
 import coovitelCobranza.security.persistence.repository.TypeDocumentRepository;
 import coovitelCobranza.security.persistence.repository.UserJpaRepository;
 import org.springframework.security.authentication.AuthenticationManager;

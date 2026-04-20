@@ -1,10 +1,10 @@
 package coovitelCobranza.security.persistence.repository;
 
-import coovitelCobranza.security.persistence.entity.UserJpaEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
 import java.util.Optional;
+
+import coovitelCobranza.security.persistence.entity.UserJpaEntity;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * Repositorio JPA para operaciones de persistencia de la entidad UserJpaEntity.

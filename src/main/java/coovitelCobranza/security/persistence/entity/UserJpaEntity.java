@@ -109,6 +109,7 @@ public class UserJpaEntity {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.roles = roles;
+        // Note: parameter name shadows field name
         this.failedAttemps = failedAttemps;
     }
 

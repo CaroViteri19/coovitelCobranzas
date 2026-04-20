@@ -8,13 +8,16 @@ import coovitelCobranza.cobranzas.casemanagement.application.dto.ScheduleActionR
 import coovitelCobranza.cobranzas.casemanagement.application.dto.TransitionCaseStatusRequest;
 import coovitelCobranza.cobranzas.casemanagement.application.exception.CaseBusinessException;
 import coovitelCobranza.cobranzas.casemanagement.application.exception.CaseNotFoundException;
+import coovitelCobranza.cobranzas.casemanagement.domain.event.CaseStatusChangedEvent;
 import coovitelCobranza.cobranzas.casemanagement.domain.model.CaseAssignmentTrace;
 import coovitelCobranza.cobranzas.casemanagement.domain.model.Case;
 import coovitelCobranza.cobranzas.casemanagement.domain.repository.CaseAssignmentTraceRepository;
 import coovitelCobranza.cobranzas.casemanagement.domain.repository.CaseRepository;
+import coovitelCobranza.cobranzas.shared.domain.event.DomainEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -31,6 +34,7 @@ import java.util.List;
  * - listPending(): Listar todos los casos pendientes
  * - assignAdvisor(): Asignar un asesor a un caso
  * - scheduleAction(): Programar la próxima acción en un caso
+ * - transitionStatus(): Mover el caso a un nuevo estado y publicar evento de dominio
  * - closeCase(): Cerrar un caso resuelto
  * Application service for case lifecycle operations with full audit tracing.
  */
@@ -42,27 +46,18 @@ public class CaseApplicationService {
     private final CaseRepository caseRepository;
     private final CaseAssignmentTraceRepository assignmentTraceRepository;
     private final AuditService auditService;
+    private final DomainEventPublisher eventPublisher;
 
-    /**
-     * Construye una instancia del servicio de aplicación.
-     *
-     * @param caseRepository el repositorio para acceder a los casos
-     */
     public CaseApplicationService(CaseRepository caseRepository,
                                   CaseAssignmentTraceRepository assignmentTraceRepository,
-                                  AuditService auditService) {
+                                  AuditService auditService,
+                                  DomainEventPublisher eventPublisher) {
         this.caseRepository = caseRepository;
         this.assignmentTraceRepository = assignmentTraceRepository;
         this.auditService = auditService;
+        this.eventPublisher = eventPublisher;
     }
 
-    /**
-     * Crea un nuevo caso de cobranza.
-     *
-     * @param request DTO con la información del caso a crear (obligationId y priority)
-     * @return DTO con la información del caso creado
-     * @throws CaseBusinessException si la prioridad es inválida o hay un error en la creación
-     */
     @Transactional
     public CaseResponse createCase(CreateCaseRequest request) {
         try {
@@ -88,13 +83,6 @@ public class CaseApplicationService {
         }
     }
 
-    /**
-     * Obtiene un caso por su identificador único.
-     *
-     * @param id el ID del caso a recuperar
-     * @return DTO con la información del caso
-     * @throws CaseNotFoundException si el caso no existe
-     */
     @Transactional(readOnly = true)
     public CaseResponse getById(Long id) {
         Case caseEntity = caseRepository.findById(id)
@@ -102,11 +90,6 @@ public class CaseApplicationService {
         return CaseResponse.fromDomain(caseEntity);
     }
 
-    /**
-     * Lista todos los casos pendientes de gestión.
-     *
-     * @return lista de DTOs con los casos pendientes
-     */
     @Transactional(readOnly = true)
     public List<CaseResponse> listPending() {
         return caseRepository.findPendientes().stream()
@@ -114,15 +97,6 @@ public class CaseApplicationService {
                 .toList();
     }
 
-    /**
-     * Asigna un asesor a un caso existente.
-     *
-     * @param id el ID del caso a actualizar
-     * @param request DTO con el nombre del asesor
-     * @return DTO con la información actualizada del caso
-     * @throws CaseNotFoundException si el caso no existe
-     * @throws CaseBusinessException si el nombre del asesor es inválido
-     */
     @Transactional
     public CaseResponse assignAdvisor(Long id, AssignAdvisorRequest request) {
         Case caseEntity = caseRepository.findById(id)
@@ -158,15 +132,6 @@ public class CaseApplicationService {
         }
     }
 
-    /**
-     * Programa la próxima acción para un caso.
-     *
-     * @param id el ID del caso a actualizar
-     * @param request DTO con la fecha y hora de la próxima acción
-     * @return DTO con la información actualizada del caso
-     * @throws CaseNotFoundException si el caso no existe
-     * @throws CaseBusinessException si la fecha y hora son inválidas
-     */
     @Transactional
     public CaseResponse scheduleAction(Long id, ScheduleActionRequest request) {
         Case caseEntity = caseRepository.findById(id)
@@ -191,10 +156,18 @@ public class CaseApplicationService {
         }
     }
 
+    /**
+     * Transiciona el caso a un nuevo estado. Tras registrar auditoría publica
+     * un {@link CaseStatusChangedEvent}. Los listeners suscritos (por ejemplo
+     * el orquestador de pagos) pueden reaccionar — p. ej. cuando el nuevo
+     * estado es {@code PAYMENT_PROMISE}, se dispara la generación y envío
+     * multicanal del link al cliente.
+     */
     @Transactional
     public CaseResponse transitionStatus(Long id, TransitionCaseStatusRequest request) {
         Case caseEntity = caseRepository.findById(id)
                 .orElseThrow(() -> new CaseNotFoundException(id));
+        Case.Status previousStatus = caseEntity.getStatus();
         try {
             Case.Status targetStatus = Case.Status.valueOf(request.targetStatus());
             caseEntity.transitionTo(targetStatus, request.reason());
@@ -210,19 +183,23 @@ public class CaseApplicationService {
                     "Transitioned to " + targetStatus + " reason=" + request.reason(),
                     request.correlationId()
             );
+
+            eventPublisher.publish(new CaseStatusChangedEvent(
+                    updatedCase.getId(),
+                    updatedCase.getObligationId(),
+                    previousStatus.name(),
+                    targetStatus.name(),
+                    request.reason(),
+                    request.performedBy() != null ? request.performedBy() : "system",
+                    Instant.now()
+            ));
+
             return CaseResponse.fromDomain(updatedCase);
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new CaseBusinessException(e.getMessage());
         }
     }
 
-    /**
-     * Cierra un caso de cobranza marcándolo como resuelto.
-     *
-     * @param id el ID del caso a cerrar
-     * @return DTO con la información del caso cerrado
-     * @throws CaseNotFoundException si el caso no existe
-     */
     @Transactional
     public CaseResponse closeCase(Long id) {
         Case caseEntity = caseRepository.findById(id)
