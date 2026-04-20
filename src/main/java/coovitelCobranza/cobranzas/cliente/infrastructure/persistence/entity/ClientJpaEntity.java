@@ -28,8 +28,17 @@ public class ClientJpaEntity {
     @Column(length = 20)
     private String telefono;
 
+    @Column(name = "telefono_2", length = 15)
+    private String telefono2;
+
     @Column(length = 100)
     private String email;
+
+    @Column(name = "ciudad", length = 60)
+    private String ciudad;
+
+    @Column(name = "canal_preferido", length = 20)
+    private String canalPreferido;
 
     @Column(nullable = false)
     private boolean aceptaWhatsApp;
@@ -168,6 +177,14 @@ public class ClientJpaEntity {
         this.telefono = telefono;
     }
 
+    public String getTelefono2() {
+        return telefono2;
+    }
+
+    public void setTelefono2(String telefono2) {
+        this.telefono2 = telefono2;
+    }
+
     /**
      * Obtiene el correo electrónico del cliente.
      *
@@ -184,6 +201,22 @@ public class ClientJpaEntity {
      */
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCiudad() {
+        return ciudad;
+    }
+
+    public void setCiudad(String ciudad) {
+        this.ciudad = ciudad;
+    }
+
+    public String getCanalPreferido() {
+        return canalPreferido;
+    }
+
+    public void setCanalPreferido(String canalPreferido) {
+        this.canalPreferido = canalPreferido;
     }
 
     /**

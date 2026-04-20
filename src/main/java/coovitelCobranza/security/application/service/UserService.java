@@ -35,19 +35,19 @@ public class UserService {
 
     public UserResponse updateUser(UpdateUserRequest updateUserRequest) {
         try {
-            UserJpaEntity user = userJpaRepository.findById(updateUserRequest.getUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + updateUserRequest.getUserId()));
+            UserJpaEntity user = userJpaRepository.findById(updateUserRequest.userId())
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + updateUserRequest.userId()));
 
-            if (updateUserRequest.getEmail() != null && !updateUserRequest.getEmail().isBlank()) {
-                user.setEmail(updateUserRequest.getEmail());
+            if (updateUserRequest.email() != null && !updateUserRequest.email().isBlank()) {
+                user.setEmail(updateUserRequest.email());
             } else {
                 user.setEmail(user.getEmail()); // Mantiene el email actual si no se proporciona uno nuevo
             }
 
-            if (updateUserRequest.isEnabled() != null || updateUserRequest.isEnabled() != user.isEnabled()) {
-                user.setEnabled(updateUserRequest.isEnabled());
+            if (updateUserRequest.enabled() != null || updateUserRequest.enabled() != user.isEnabled()) {
+                user.setEnabled(updateUserRequest.enabled());
             }
-            user.setEnabled(updateUserRequest.isEnabled());
+            user.setEnabled(updateUserRequest.enabled());
 
             UserJpaEntity updatedUser = userJpaRepository.save(user);
             return new UserResponse(

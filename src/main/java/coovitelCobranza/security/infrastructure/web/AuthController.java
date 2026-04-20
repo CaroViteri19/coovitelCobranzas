@@ -60,11 +60,11 @@ public class AuthController {
      * @param request Solicitud con el ID del usuario y los roles a asignar.
      * @return Respuesta con mensaje de confirmación.
      */
-//    @PreAuthorize("hasRole('ADMINISTRADOR')")
-//    @PostMapping("/role")
-//    public ResponseEntity<String> assignRole(@Valid @RequestBody UpdateRoleRequest request) {
-//        return ResponseEntity.ok(authApplicationService.assignRole(request));
-//    }
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PostMapping("/role")
+    public ResponseEntity<String> assignRole(@Valid @RequestBody UpdateRoleRequest request) {
+        return ResponseEntity.ok(authApplicationService.assignRole(request));
+    }
 
     /**
      * Devuelve la lista de roles disponibles en el sistema.

@@ -18,8 +18,8 @@ public record RegisterUserResponse(
         String username,
         String fullName,
         String email,
-        String roles,
+        List<String> roles,
         boolean enabled
-) {     
+) {
 }
 

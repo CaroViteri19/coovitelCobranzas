@@ -7,8 +7,10 @@ import coovitelCobranza.security.application.exception.UserAlreadyExistsExceptio
 import coovitelCobranza.security.config.JwtProperties;
 import coovitelCobranza.security.persistence.entity.RoleJpaEntity;
 import coovitelCobranza.security.persistence.entity.TypeDocumentEntity;
+import coovitelCobranza.security.persistence.entity.TypeDocumentEntity;
 import coovitelCobranza.security.persistence.entity.UserJpaEntity;
 import coovitelCobranza.security.persistence.repository.RoleJpaRepository;
+import coovitelCobranza.security.persistence.repository.TypeDocumentRepository;
 import coovitelCobranza.security.persistence.repository.TypeDocumentRepository;
 import coovitelCobranza.security.persistence.repository.UserJpaRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -190,7 +192,7 @@ public class AuthApplicationService {
                 savedUser.getUsername(),
                 savedUser.getFullName(),
                 savedUser.getEmail(),
-                role.getName(),
+                List.of(role.getName()),
                 savedUser.isEnabled()
         );
     }
@@ -204,7 +206,6 @@ public class AuthApplicationService {
      * @throws InvalidCredentialsException Si las credenciales son inválidas.
      */
     public LoginResponse login(LoginRequest request) {
-        System.out.println("ENTRO AL SERVICIO");
         String normalizedLoginEmail = request.email().trim().toLowerCase(Locale.ROOT);
         UserJpaEntity user = userRepository.findByEmail(normalizedLoginEmail)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
@@ -349,29 +350,42 @@ public class AuthApplicationService {
             log.warn("No se pudo registrar la auditoría de {} para el usuario '{}': {}", action, user, ex.getMessage());
         }
     }
-//    @Transactional
-//    public String assignRole(UpdateRoleRequest  request) {
-//        UserJpaEntity user = userRepository.findById(request.idUser()).orElseThrow(() -> new RuntimeException("User not found"));
-//        Optional<RoleJpaEntity> roles = roleRepository.findById(request.role());
-//
-//        user.setRoles(new RoleJpaEntity(roles));
-//        // System.out.println("user: " + user + " roles: " + user.getRoles());
-//        userRepository.save(user);
-//
-//        // Log role assignment
-//        auditService.registerEvent(
-//                "SECURITY",
-//                "USER",
-//                user.getId(),
-//                "ROLE_ASSIGNED",
-//                user.getUsername(),
-//                "ADMIN",
-//                "API",
-//                "Roles changed from " + oldRoles + " to " + newRoles,
-//                null
-//        );
-//
-//        return "User" + user.getFullName() + " updated with roles "; //+ roles.stream().map(RoleJpaEntity::getName).toList();
-//    }
+
+    /**
+     * Asigna un nuevo rol a un usuario existente.
+     * Reemplaza el rol actual con el primero de la lista recibida.
+     *
+     * @param request Solicitud con el ID del usuario y el ID del rol a asignar.
+     * @return Mensaje confirmando la actualización de rol.
+     * @throws RuntimeException Si el usuario o rol no se encuentran en el sistema.
+     */
+    @Transactional
+    public String assignRole(UpdateRoleRequest request) {
+        UserJpaEntity user = userRepository.findById(request.idUser())
+                .orElseThrow(() -> new RuntimeException("User not found: " + request.idUser()));
+
+        Long roleId = request.role().get(0);
+        RoleJpaEntity newRole = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found: " + roleId));
+
+        String oldRoleName = user.getRoles() != null ? user.getRoles().getName() : "none";
+        user.setRoles(newRole);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        auditService.registerEvent(
+                "SECURITY",
+                "USER",
+                user.getId(),
+                "ROLE_ASSIGNED",
+                user.getUsername(),
+                "ADMIN",
+                "API",
+                "Role changed from " + oldRoleName + " to " + newRole.getName(),
+                null
+        );
+
+        return "User " + user.getFullName() + " updated with role: " + newRole.getName();
+    }
 }
 
