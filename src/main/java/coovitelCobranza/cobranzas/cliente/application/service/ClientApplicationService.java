@@ -4,12 +4,15 @@ import coovitelCobranza.cobranzas.cliente.application.dto.UpdateContactClientReq
 import coovitelCobranza.cobranzas.cliente.application.dto.UpdateConsentsClientRequest;
 import coovitelCobranza.cobranzas.cliente.application.dto.ClientResponse;
 import coovitelCobranza.cobranzas.cliente.application.dto.CreateClientRequest;
+import coovitelCobranza.cobranzas.cliente.application.dto.PageResponse;
 import coovitelCobranza.cobranzas.cliente.application.exception.ClientBusinessException;
 import coovitelCobranza.cobranzas.cliente.application.exception.ClientNotFoundException;
 import coovitelCobranza.cobranzas.cliente.domain.model.Client;
 import coovitelCobranza.cobranzas.cliente.domain.repository.ClientRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Servicio de aplicación para gestionar operaciones de clientes.
@@ -78,6 +81,26 @@ public class ClientApplicationService {
         Client client = clienteRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException(id));
         return ClientResponse.fromDomain(client);
+    }
+
+    /**
+     * Lista todos los clientes paginados, ordenados por ID ascendente.
+     *
+     * @param page índice de página (0-based)
+     * @param size tamaño de página
+     * @return página con clientes, total y metadata
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<ClientResponse> listAll(int page, int size) {
+        List<Client> clients = clienteRepository.findAll(page, size);
+        long total = clienteRepository.count();
+        int totalPages = size <= 0 ? 0 : (int) Math.ceil((double) total / size);
+
+        List<ClientResponse> content = clients.stream()
+                .map(ClientResponse::fromDomain)
+                .toList();
+
+        return new PageResponse<>(content, page, size, total, totalPages);
     }
 
     /**

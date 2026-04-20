@@ -6,6 +6,8 @@ import coovitelCobranza.cobranzas.cliente.application.dto.ClientResponse;
 import coovitelCobranza.cobranzas.cliente.application.dto.CreateClientRequest;
 import coovitelCobranza.cobranzas.cliente.application.dto.GetClientByDocumentRequest;
 import coovitelCobranza.cobranzas.cliente.application.dto.GetClientByIdRequest;
+import coovitelCobranza.cobranzas.cliente.application.dto.ListClientsRequest;
+import coovitelCobranza.cobranzas.cliente.application.dto.PageResponse;
 import coovitelCobranza.cobranzas.cliente.application.dto.UpdateClientConsentsRequest;
 import coovitelCobranza.cobranzas.cliente.application.dto.UpdateClientContactRequest;
 import coovitelCobranza.cobranzas.cliente.application.service.ClientApplicationService;
@@ -45,6 +47,20 @@ public class ClientController {
     public ResponseEntity<ClientResponse> create(@RequestBody CreateClientRequest request) {
         ClientResponse response = clienteApplicationService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Lista clientes paginados (por defecto 10 por página, máx 100).
+     *
+     * @param request criterio de paginación {page,size}
+     * @return ResponseEntity con status 200 y página de clientes
+     */
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
+    @PostMapping("/list")
+    public ResponseEntity<PageResponse<ClientResponse>> list(@RequestBody(required = false) ListClientsRequest request) {
+        ListClientsRequest safe = request != null ? request : new ListClientsRequest(0, 10);
+        PageResponse<ClientResponse> response = clienteApplicationService.listAll(safe.safePage(), safe.safeSize());
+        return ResponseEntity.ok(response);
     }
 
     /**

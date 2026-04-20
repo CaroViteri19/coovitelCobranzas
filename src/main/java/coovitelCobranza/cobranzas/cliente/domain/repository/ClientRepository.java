@@ -2,6 +2,7 @@ package coovitelCobranza.cobranzas.cliente.domain.repository;
 
 import coovitelCobranza.cobranzas.cliente.domain.model.Client;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,5 +35,21 @@ public interface ClientRepository {
      * @return Optional con el cliente si existe, o vacío si no
      */
     Optional<Client> findByDocumento(String tipoDocumento, String numeroDocumento);
+
+    /**
+     * Retorna una página de clientes ordenados por ID ascendente.
+     *
+     * @param page índice de página (0-based)
+     * @param size tamaño de página
+     * @return clientes de la página solicitada
+     */
+    List<Client> findAll(int page, int size);
+
+    /**
+     * Cuenta el total de clientes almacenados.
+     *
+     * @return número total de clientes
+     */
+    long count();
 }
 

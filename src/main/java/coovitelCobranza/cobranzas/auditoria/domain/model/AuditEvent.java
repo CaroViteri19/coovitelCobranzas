@@ -3,6 +3,13 @@ package coovitelCobranza.cobranzas.auditoria.domain.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * Modelo de dominio para un evento de auditoría.
+ *
+ * <p>Inmutable: una vez creado no se puede modificar. Se construye a través de
+ * {@link #create} (para eventos nuevos, aún sin ID persistido) o
+ * {@link #reconstruct} (para rehidratar desde la capa de persistencia).
+ */
 public class AuditEvent {
 
     private final Long id;
@@ -41,10 +48,9 @@ public class AuditEvent {
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
     }
 
-    public static AuditEvent create(String entityType, Long entityId, String action, String user, String details) {
-        return new AuditEvent(null, entityType, entityId, action, user, null, "SYSTEM", "GENERAL", null, details, LocalDateTime.now());
-    }
-
+    /**
+     * Factoría principal para crear un nuevo evento (sin ID persistido).
+     */
     public static AuditEvent create(String entityType,
                                     Long entityId,
                                     String action,
@@ -69,10 +75,9 @@ public class AuditEvent {
         );
     }
 
-    public static AuditEvent crear(String entityType, Long entityId, String action, String user, String details) {
-        return create(entityType, entityId, action, user, details);
-    }
-
+    /**
+     * Rehidrata un evento desde la capa de persistencia.
+     */
     public static AuditEvent reconstruct(Long id,
                                          String entityType,
                                          Long entityId,
@@ -87,29 +92,15 @@ public class AuditEvent {
         return new AuditEvent(id, entityType, entityId, action, user, userRole, source, module, correlationId, details, createdAt);
     }
 
-    public static AuditEvent reconstruct(Long id,
-                                         String entityType,
-                                         Long entityId,
-                                         String action,
-                                         String user,
-                                         String details,
-                                         LocalDateTime createdAt) {
-        return new AuditEvent(id, entityType, entityId, action, user, null, "SYSTEM", "GENERAL", null, details, createdAt);
-    }
-
     public Long getId() { return id; }
     public String getEntityType() { return entityType; }
-    public String getEntidad() { return entityType; }
     public Long getEntityId() { return entityId; }
-    public Long getEntidadId() { return entityId; }
     public String getAction() { return action; }
     public String getUser() { return user; }
-    public String getUsuario() { return user; }
     public String getUserRole() { return userRole; }
     public String getSource() { return source; }
     public String getModule() { return module; }
     public String getCorrelationId() { return correlationId; }
     public String getDetails() { return details; }
-    public String getDetalle() { return details; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

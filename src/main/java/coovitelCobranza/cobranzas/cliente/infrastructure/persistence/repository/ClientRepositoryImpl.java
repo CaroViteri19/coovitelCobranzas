@@ -4,8 +4,11 @@ import coovitelCobranza.cobranzas.cliente.domain.model.Client;
 import coovitelCobranza.cobranzas.cliente.domain.repository.ClientRepository;
 import coovitelCobranza.cobranzas.cliente.infrastructure.persistence.entity.ClientJpaEntity;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,21 +20,10 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     private final ClientJpaRepository jpaRepository;
 
-    /**
-     * Construye la implementación del repositorio.
-     *
-     * @param jpaRepository repositorio JPA para operaciones de persistencia
-     */
     public ClientRepositoryImpl(ClientJpaRepository jpaRepository) {
         this.jpaRepository = jpaRepository;
     }
 
-    /**
-     * Guarda o actualiza un cliente, mapeando desde el modelo de dominio a la entidad JPA.
-     *
-     * @param cliente cliente del dominio a guardar
-     * @return cliente guardado con su identificador asignado
-     */
     @Override
     public Client save(Client cliente) {
         ClientJpaEntity entity = clienteToEntity(cliente);
@@ -39,38 +31,36 @@ public class ClientRepositoryImpl implements ClientRepository {
         return entityToClient(savedEntity);
     }
 
-    /**
-     * Busca un cliente por su identificador único.
-     *
-     * @param id identificador del cliente
-     * @return Optional con el cliente mapeado a dominio
-     */
     @Override
     public Optional<Client> findById(Long id) {
         return jpaRepository.findById(id).map(this::entityToClient);
     }
 
-    /**
-     * Busca un cliente por tipo y número de documento.
-     *
-     * @param tipoDocumento tipo de documento de identidad
-     * @param numeroDocumento número de documento de identidad
-     * @return Optional con el cliente mapeado a dominio
-     */
     @Override
     public Optional<Client> findByDocumento(String tipoDocumento, String numeroDocumento) {
         return jpaRepository.findByTipoDocumentoAndNumeroDocumento(tipoDocumento, numeroDocumento)
                 .map(this::entityToClient);
     }
 
-    /**
-     * Convierte un cliente del dominio a entidad JPA.
-     *
-     * @param cliente cliente del dominio
-     * @return entidad JPA mapeada
-     */
+    @Override
+    public List<Client> findAll(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+        return jpaRepository.findAll(pageRequest)
+                .getContent()
+                .stream()
+                .map(this::entityToClient)
+                .toList();
+    }
+
+    @Override
+    public long count() {
+        return jpaRepository.count();
+    }
+
+    // ── Mapeo Dominio → JPA ───────────────────────────────────────────────────
+
     private ClientJpaEntity clienteToEntity(Client cliente) {
-        return new ClientJpaEntity(
+        ClientJpaEntity entity = new ClientJpaEntity(
                 cliente.getId(),
                 cliente.getTipoDocumento(),
                 cliente.getNumeroDocumento(),
@@ -82,22 +72,26 @@ public class ClientRepositoryImpl implements ClientRepository {
                 cliente.isAceptaEmail(),
                 cliente.getUpdatedAt()
         );
+        // Campos extendidos — carga batch
+        entity.setTelefono2(cliente.getTelefono2());
+        entity.setCiudad(cliente.getCiudad());
+        entity.setCanalPreferido(cliente.getCanalPreferido());
+        return entity;
     }
 
-    /**
-     * Convierte una entidad JPA a cliente del dominio.
-     *
-     * @param entity entidad JPA
-     * @return cliente del dominio mapeado
-     */
+    // ── Mapeo JPA → Dominio ───────────────────────────────────────────────────
+
     private Client entityToClient(ClientJpaEntity entity) {
-        return Client.reconstruct(
+        return Client.reconstructFull(
                 entity.getId(),
                 entity.getTipoDocumento(),
                 entity.getNumeroDocumento(),
                 entity.getFullName(),
                 entity.getTelefono(),
                 entity.getEmail(),
+                entity.getTelefono2(),
+                entity.getCiudad(),
+                entity.getCanalPreferido(),
                 entity.isAceptaWhatsApp(),
                 entity.isAceptaSms(),
                 entity.isAceptaEmail(),
@@ -105,4 +99,3 @@ public class ClientRepositoryImpl implements ClientRepository {
         );
     }
 }
-
