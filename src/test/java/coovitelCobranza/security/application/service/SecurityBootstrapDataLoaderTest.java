@@ -67,7 +67,7 @@ class SecurityBootstrapDataLoaderTest {
     @Test
     @DisplayName("Bootstrap creates admin role, document type and admin user")
     void bootstrapCreatesAdminUser() {
-        when(roleRepository.findByName("ADMIN")).thenReturn(Optional.empty());
+        when(roleRepository.findByName("ADMINISTRATOR")).thenReturn(Optional.empty());
         when(roleRepository.save(any(RoleJpaEntity.class))).thenAnswer(invocation -> {
             RoleJpaEntity role = invocation.getArgument(0);
             role.setId(1L);
@@ -97,14 +97,14 @@ class SecurityBootstrapDataLoaderTest {
         assertNotNull(savedUser.getTypeDocument());
         assertEquals("CC", savedUser.getTypeDocument().getAbbreviation());
         assertNotNull(savedUser.getRoles());
-        assertEquals("ADMIN", savedUser.getRoles().getName());
+        assertEquals("ADMINISTRATOR", savedUser.getRoles().getName());
         assertTrue(savedUser.isEnabled());
     }
 
     @Test
     @DisplayName("Bootstrap does nothing when admin already exists")
     void bootstrapSkipsExistingAdmin() {
-        when(roleRepository.findByName("ADMIN")).thenReturn(Optional.of(new RoleJpaEntity(1L, "ADMIN", "Acceso total al sistema", null)));
+        when(roleRepository.findByName("ADMINISTRATOR")).thenReturn(Optional.of(new RoleJpaEntity(1L, "ADMINISTRATOR", "Acceso total al sistema", null)));
         when(typeDocumentRepository.findByAbbreviationIgnoreCase("CC")).thenReturn(Optional.of(new TypeDocumentEntity(2L, "Cedula", "CC")));
         when(userRepository.existsByUsername("admin")).thenReturn(true);
 
