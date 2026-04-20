@@ -81,7 +81,7 @@ public class BulkImportExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BulkImportResultResponse> handleGeneric(Exception ex) {
-        log.error("[HANDLER] Error inesperado en carga masiva", ex);
+        log.error("[HANDLER] Error inesperado en carga masiva: ", ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(BulkImportResultResponse.failed(

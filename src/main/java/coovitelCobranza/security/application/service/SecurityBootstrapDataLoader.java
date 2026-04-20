@@ -60,10 +60,10 @@ public class SecurityBootstrapDataLoader implements CommandLineRunner {
     }
 
     private RoleJpaEntity ensureAdminRole() {
-        return roleRepository.findByName("ADMIN")
+        return roleRepository.findByName("ADMINISTRATOR")
                 .orElseGet(() -> {
                     RoleJpaEntity role = new RoleJpaEntity();
-                    role.setName("ADMIN");
+                    role.setName("ADMINISTRATOR");
                     role.setDescription("Acceso total al sistema");
                     role.setCreatedAt(LocalDateTime.now());
                     return roleRepository.save(role);

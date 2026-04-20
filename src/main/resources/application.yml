@@ -9,9 +9,9 @@ spring:
 
   datasource:
     # rewriteBatchedStatements=true: convierte N batches en multi-row INSERT → throughput máximo
-    url: ${DB_URL:jdbc:mysql://localhost:3306/coovitelcobranzas?rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true}
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
+    url: ${DB_URL:jdbc:mysql:///coovitelcobranzas?rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USER:appuser}
+    password: ${DB_PASSWORD:apppass123}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -46,7 +46,7 @@ app:
       expiration-minutes: 480
     bootstrap:
       enabled: true
-      admin-username: admin
+      admin-username: ADMINISTRATOR
       admin-email: admin@coovitel.local
       admin-password: Admin123!
       admin-full-name: System Administrator

@@ -216,9 +216,9 @@ public class BulkImportApplicationService {
                 c.updateFromBatch(
                         normalize(row.nombreCompleto()),
                         normalize(row.telefono1()),
-                        normalize(nullableField(row.email())),
-                        normalize(nullableField(row.telefono2())),
-                        normalize(nullableField(row.ciudad())),
+                        nullableField(normalize(row.email())),
+                        nullableField(normalize(row.telefono2())),
+                        nullableField(normalize(row.ciudad())),
                         nullableField(row.canalPreferido())   // canal: no normalizar (case-sensitive)
                 );
                 clientRepository.save(c);
@@ -238,9 +238,9 @@ public class BulkImportApplicationService {
             cliente.updateFromBatch(
                     normalize(row.nombreCompleto()),
                     normalize(row.telefono1()),
-                    normalize(nullableField(row.email())),
-                    normalize(nullableField(row.telefono2())),
-                    normalize(nullableField(row.ciudad())),
+                    nullableField(normalize(row.email())),
+                    nullableField(normalize(row.telefono2())),
+                    nullableField(normalize(row.ciudad())),
                     nullableField(row.canalPreferido())
             );
             log.debug("[CARGA-MASIVA] Cliente actualizado: doc='{}'", docKey);
@@ -254,9 +254,9 @@ public class BulkImportApplicationService {
             cliente.updateFromBatch(
                     normalize(row.nombreCompleto()),
                     normalize(row.telefono1()),
-                    normalize(nullableField(row.email())),
-                    normalize(nullableField(row.telefono2())),
-                    normalize(nullableField(row.ciudad())),
+                    nullableField(normalize(row.email())),
+                    nullableField(normalize(row.telefono2())),
+                    nullableField(normalize(row.ciudad())),
                     nullableField(row.canalPreferido())
             );
             log.debug("[CARGA-MASIVA] Cliente creado: doc='{}'", docKey);
@@ -284,9 +284,9 @@ public class BulkImportApplicationService {
         int        diasMora   = Integer.parseInt(row.diasMoraRaw().trim());
         LocalDate  fechaVenc  = LocalDate.parse(row.fechaVencRaw().trim(), DATE_FMT);
 
-        String segmento     = normalize(nullableField(row.segmento()));
-        String producto     = normalize(nullableField(row.producto()));
-        String codigoAgente = normalize(nullableField(row.codigoAgente()));
+        String segmento     = nullableField(normalize(row.segmento()));
+        String producto     = nullableField(normalize(row.producto()));
+        String codigoAgente = nullableField(normalize(row.codigoAgente()));
 
         Optional<Obligation> existente =
                 obligationRepository.findByObligationNumber(row.numObligacion().trim());

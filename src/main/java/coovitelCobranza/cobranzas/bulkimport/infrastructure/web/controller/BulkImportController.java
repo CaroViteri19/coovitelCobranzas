@@ -45,7 +45,7 @@ public class BulkImportController {
      * @param jwt  token JWT del usuario autenticado (para auditoría)
      * @return resultado de la carga
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'SUPERVISOR')")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BulkImportResultResponse> upload(
             @RequestParam("file") MultipartFile file,
