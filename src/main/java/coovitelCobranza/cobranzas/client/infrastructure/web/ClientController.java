@@ -55,7 +55,7 @@ public class ClientController {
      * @param request criterio de paginación {page,size}
      * @return ResponseEntity con status 200 y página de clientes
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/list")
     public ResponseEntity<PageResponse<ClientResponse>> list(@RequestBody(required = false) ListClientsRequest request) {
         ListClientsRequest safe = request != null ? request : new ListClientsRequest(0, 10);
