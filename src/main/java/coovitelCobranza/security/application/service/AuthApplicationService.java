@@ -1,6 +1,6 @@
 package coovitelCobranza.security.application.service;
 
-import coovitelCobranza.cobranzas.auditoria.domain.service.AuditService;
+import coovitelCobranza.cobranzas.audit.domain.service.AuditService;
 import coovitelCobranza.security.application.dto.*;
 import coovitelCobranza.security.application.exception.InvalidCredentialsException;
 import coovitelCobranza.security.application.exception.UserAlreadyExistsException;

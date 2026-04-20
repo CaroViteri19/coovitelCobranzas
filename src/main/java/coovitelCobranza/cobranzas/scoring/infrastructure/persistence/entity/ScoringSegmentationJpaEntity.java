@@ -5,32 +5,32 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "scoring_segmentacion")
+@Table(name = "scoring_segmentation")
 public class ScoringSegmentationJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "customer_id", nullable = false)
     private Long clienteId;
 
-    @Column(nullable = false)
+    @Column(name = "obligation_id", nullable = false)
     private Long obligacionId;
 
     @Column(nullable = false)
     private double score;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "segment", nullable = false, length = 20)
     private String segmento;
 
-    @Column(nullable = false, length = 30)
+    @Column(name = "model_version", nullable = false, length = 30)
     private String versionModelo;
 
-    @Column(nullable = false, length = 200)
+    @Column(name = "main_reason", nullable = false, length = 200)
     private String razonPrincipal;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     public ScoringSegmentationJpaEntity() {

@@ -25,22 +25,22 @@ CREATE TABLE `clientes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
--- Table: pagos (Pago Module)
+-- Table: payments (Payment Module)
 -- ==========================================
-DROP TABLE IF EXISTS `pagos`;
-CREATE TABLE `pagos` (
+DROP TABLE IF EXISTS `payments`;
+CREATE TABLE `payments` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `obligacion_id` BIGINT NOT NULL,
-  `valor` DECIMAL(14, 2) NOT NULL,
-  `referencia_externa` VARCHAR(50) NOT NULL UNIQUE,
-  `metodo` VARCHAR(20) NOT NULL,
-  `estado` VARCHAR(20) NOT NULL,
-  `confirmado_at` DATETIME,
+  `obligation_id` BIGINT NOT NULL,
+  `amount` DECIMAL(14, 2) NOT NULL,
+  `external_reference` VARCHAR(50) NOT NULL UNIQUE,
+  `method` VARCHAR(20) NOT NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `confirmed_at` DATETIME,
   `created_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_referencia` (`referencia_externa`),
-  INDEX `idx_obligacion` (`obligacion_id`),
-  INDEX `idx_estado` (`estado`)
+  UNIQUE KEY `uk_reference` (`external_reference`),
+  INDEX `idx_obligation` (`obligation_id`),
+  INDEX `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
@@ -132,43 +132,43 @@ CREATE TABLE `scoring_segmentacion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
--- Table: orquestacion_ejecuciones (Orquestacion Module)
+-- Table: orchestration_executions (Orchestration Module)
 -- ==========================================
-DROP TABLE IF EXISTS `orquestacion_ejecuciones`;
-CREATE TABLE `orquestacion_ejecuciones` (
+DROP TABLE IF EXISTS `orchestration_executions`;
+CREATE TABLE `orchestration_executions` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `caso_gestion_id` BIGINT NOT NULL,
-  `canal` VARCHAR(20) NOT NULL,
-  `destino` VARCHAR(120) NOT NULL,
-  `plantilla` VARCHAR(500) NOT NULL,
-  `estado` VARCHAR(20) NOT NULL,
+  `case_id` BIGINT NOT NULL,
+  `channel` VARCHAR(20) NOT NULL,
+  `destination` VARCHAR(120) NOT NULL,
+  `template` VARCHAR(500) NOT NULL,
+  `status` VARCHAR(20) NOT NULL,
   `created_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `idx_orq_caso` (`caso_gestion_id`),
-  INDEX `idx_orq_estado` (`estado`)
+  INDEX `idx_orchestration_case` (`case_id`),
+  INDEX `idx_orchestration_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
--- Table: auditoria_eventos (Auditoria Module)
+-- Table: audit_events (Audit Module)
 -- ==========================================
-DROP TABLE IF EXISTS `auditoria_eventos`;
-CREATE TABLE `auditoria_eventos` (
+DROP TABLE IF EXISTS `audit_events`;
+CREATE TABLE `audit_events` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `entidad` VARCHAR(80) NOT NULL,
-  `entidad_id` BIGINT NOT NULL,
-  `accion` VARCHAR(80) NOT NULL,
-  `usuario` VARCHAR(80) NOT NULL,
-  `rol_usuario` VARCHAR(80),
-  `origen` VARCHAR(30) DEFAULT 'SYSTEM',
-  `modulo` VARCHAR(50) DEFAULT 'GENERAL',
-  `id_auditoria` VARCHAR(100),
-  `detalle` VARCHAR(1000),
+  `entity_type` VARCHAR(80) NOT NULL,
+  `entity_id` BIGINT NOT NULL,
+  `action` VARCHAR(80) NOT NULL,
+  `username` VARCHAR(80) NOT NULL,
+  `user_role` VARCHAR(80),
+  `source` VARCHAR(30) DEFAULT 'SYSTEM',
+  `module_name` VARCHAR(50) DEFAULT 'GENERAL',
+  `correlation_id` VARCHAR(100),
+  `details` VARCHAR(1000),
   `created_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `idx_auditoria_entidad` (`entidad`, `entidad_id`),
-  INDEX `idx_auditoria_created` (`created_at`),
-  INDEX `idx_auditoria_modulo_accion` (`modulo`, `accion`),
-  INDEX `idx_auditoria_id_auditoria` (`id_auditoria`)
+  INDEX `idx_audit_entity` (`entity_type`, `entity_id`),
+  INDEX `idx_audit_created` (`created_at`),
+  INDEX `idx_audit_module_action` (`module_name`, `action`),
+  INDEX `idx_audit_correlation_id` (`correlation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
@@ -209,8 +209,8 @@ CREATE INDEX idx_scoring_cliente_segmento ON scoring_segmentacion(cliente_id, se
 -- Índices para políticas por tipo y rango
 CREATE INDEX idx_politicas_tipo_rango ON politicas(tipo_cobro, dias_mora_minimo, dias_mora_maximo);
 
--- Índices para búsquedas frecuentes de auditoría
-CREATE INDEX idx_auditoria_usuario_accion ON auditoria_eventos(usuario, accion);
+-- Indices for frequent audit searches
+CREATE INDEX idx_audit_username_action ON audit_events(username, action);
 
 -- Prevent deletion of case statuses that are already referenced by managed cases.
 DROP TRIGGER IF EXISTS `trg_case_statuses_before_delete`;

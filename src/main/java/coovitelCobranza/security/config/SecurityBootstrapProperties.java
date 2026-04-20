@@ -20,6 +20,11 @@ public class SecurityBootstrapProperties {
     private String adminUsername;
 
     /**
+     * Correo electrónico del administrador predeterminado.
+     */
+    private String adminEmail;
+
+    /**
      * Contraseña del administrador predeterminado.
      */
     private String adminPassword;
@@ -30,12 +35,7 @@ public class SecurityBootstrapProperties {
     private String adminFullName;
 
     /**
-     * Correo electrónico del administrador predeterminado.
-     */
-    private String adminEmail;
-
-    /**
-     * Tipo de documento del administrador predeterminado.
+     * Abreviatura del tipo de documento del administrador predeterminado.
      */
     private String adminDocumentType;
 
@@ -81,6 +81,24 @@ public class SecurityBootstrapProperties {
     }
 
     /**
+     * Obtiene el correo electrónico del administrador.
+     *
+     * @return Correo electrónico del administrador.
+     */
+    public String getAdminEmail() {
+        return adminEmail;
+    }
+
+    /**
+     * Establece el correo electrónico del administrador.
+     *
+     * @param adminEmail Correo electrónico del administrador.
+     */
+    public void setAdminEmail(String adminEmail) {
+        this.adminEmail = adminEmail;
+    }
+
+    /**
      * Obtiene la contraseña del administrador.
      *
      * @return Contraseña del administrador.
@@ -116,26 +134,38 @@ public class SecurityBootstrapProperties {
         this.adminFullName = adminFullName;
     }
 
-    public String getAdminEmail() {
-        return adminEmail;
-    }
-
-    public void setAdminEmail(String adminEmail) {
-        this.adminEmail = adminEmail;
-    }
-
+    /**
+     * Obtiene la abreviatura del tipo de documento del administrador.
+     *
+     * @return Abreviatura del tipo de documento.
+     */
     public String getAdminDocumentType() {
         return adminDocumentType;
     }
 
+    /**
+     * Establece la abreviatura del tipo de documento del administrador.
+     *
+     * @param adminDocumentType Abreviatura del tipo de documento.
+     */
     public void setAdminDocumentType(String adminDocumentType) {
         this.adminDocumentType = adminDocumentType;
     }
 
+    /**
+     * Obtiene el número de documento del administrador.
+     *
+     * @return Número de documento del administrador.
+     */
     public Long getAdminDocument() {
         return adminDocument;
     }
 
+    /**
+     * Establece el número de documento del administrador.
+     *
+     * @param adminDocument Número de documento del administrador.
+     */
     public void setAdminDocument(Long adminDocument) {
         this.adminDocument = adminDocument;
     }
