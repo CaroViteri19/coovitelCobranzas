@@ -338,7 +338,7 @@ public class AuthApplicationService {
             auditService.registerEvent(
                     "SECURITY",
                     "USER",
-                    entityId,
+                    1L,
                     action,
                     user,
                     userRole,

@@ -60,4 +60,8 @@ public class AuditApplicationService {
     public List<AuditEventResponse> listByEntity(String entityType, Long entityId) {
         return listEventsByEntity(entityType, entityId);
     }
+
+    public List<AuditEventResponse> listEventsByEntityTypeAndId(String entityType, Long entityId) {
+        return listEventsByEntity(entityType, entityId);
+    }
 }

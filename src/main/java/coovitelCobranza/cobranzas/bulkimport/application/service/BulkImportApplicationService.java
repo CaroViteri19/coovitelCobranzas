@@ -176,7 +176,7 @@ public class BulkImportApplicationService {
                     .formatted(fileName, exitosos, rows.size(), erroresFila.size());
 
             auditService.registerEvent(
-                    "INTEGRATION", "CARGA_MASIVA", null,
+                    "INTEGRATION", "CARGA_MASIVA", 2L,
                     accion, uploadedBy, "SISTEMA", "WEB", detalle
             );
 
