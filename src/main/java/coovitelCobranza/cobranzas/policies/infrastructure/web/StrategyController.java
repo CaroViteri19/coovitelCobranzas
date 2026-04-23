@@ -34,7 +34,7 @@ public class StrategyController {
      * Create a new collection strategy.
      * Write operation – ADMINISTRADOR only.
      */
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping
     public ResponseEntity<StrategyResponse> create(@RequestBody CreateStrategyRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
@@ -44,7 +44,7 @@ public class StrategyController {
      * Get a strategy by its ID.
      * Read operation – ADMINISTRADOR, SUPERVISOR, AUDITOR.
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/id")
     public ResponseEntity<StrategyResponse> getById(@RequestBody java.util.Map<String, Long> body) {
         return ResponseEntity.ok(service.getById(body.get("strategyId")));
@@ -54,7 +54,7 @@ public class StrategyController {
      * List all active strategies.
      * Read operation – ADMINISTRADOR, SUPERVISOR, AUDITOR.
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AUDITOR')")
     @GetMapping("/active")
     public ResponseEntity<List<StrategyResponse>> listActive() {
         return ResponseEntity.ok(service.listActive());
@@ -64,7 +64,7 @@ public class StrategyController {
      * Activate a strategy.
      * Write operation – ADMINISTRADOR only.
      */
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping("/activate")
     public ResponseEntity<StrategyResponse> activate(@RequestBody java.util.Map<String, Long> body) {
         return ResponseEntity.ok(service.activate(body.get("strategyId")));
@@ -74,7 +74,7 @@ public class StrategyController {
      * Deactivate a strategy.
      * Write operation – ADMINISTRADOR only.
      */
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping("/deactivate")
     public ResponseEntity<StrategyResponse> deactivate(@RequestBody java.util.Map<String, Long> body) {
         return ResponseEntity.ok(service.deactivate(body.get("strategyId")));

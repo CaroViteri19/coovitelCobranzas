@@ -37,7 +37,7 @@ public class CasePaymentLinkController {
      * @param request cuerpo opcional. Si es {@code null} se usan defaults.
      * @return 200 con el resumen del envío.
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AGENTE')")
     @PostMapping("/{caseId}/send-payment-link")
     public ResponseEntity<SendPaymentLinkResponse> sendPaymentLink(
             @PathVariable Long caseId,

@@ -4,9 +4,12 @@ import coovitelCobranza.cobranzas.casemanagement.domain.model.Case;
 import coovitelCobranza.cobranzas.casemanagement.domain.repository.CaseRepository;
 import coovitelCobranza.cobranzas.casemanagement.infrastructure.persistence.entity.CaseJpaEntity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -17,6 +20,8 @@ import java.util.Optional;
  */
 @Component
 public class CaseRepositoryImpl implements CaseRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(CaseRepositoryImpl.class);
 
     private final CaseJpaRepository jpaRepository;
 
@@ -60,9 +65,29 @@ public class CaseRepositoryImpl implements CaseRepository {
      */
     @Override
     public List<Case> findPendientes() {
-        return jpaRepository.findPendientesByStatusIn(List.of(Case.Status.NEW, Case.Status.IN_MANAGEMENT)).stream()
-                .map(this::entityToCase)
+        // La columna status en BD es VARCHAR, por eso enviamos los .name() del enum
+        // y no instancias del enum (evita binding issues de Hibernate contra String).
+        return jpaRepository.findByStatusIn(
+                        List.of(Case.Status.NEW.name(), Case.Status.IN_MANAGEMENT.name()))
+                .stream()
+                .map(this::safeEntityToCase)
+                .filter(Objects::nonNull)
                 .toList();
+    }
+
+    /**
+     * Variante tolerante de {@link #entityToCase}: si una fila tiene data
+     * corrupta (p.ej. priority "BAJA" legacy o status inválido), se loguea
+     * y se omite en vez de reventar toda la respuesta con 500.
+     */
+    private Case safeEntityToCase(CaseJpaEntity entity) {
+        try {
+            return entityToCase(entity);
+        } catch (RuntimeException e) {
+            log.warn("Skipping case id={} with invalid data: priority='{}', status='{}' → {}",
+                    entity.getId(), entity.getPriority(), entity.getStatus(), e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -93,7 +118,7 @@ public class CaseRepositoryImpl implements CaseRepository {
         return Case.reconstruct(
                 entity.getId(),
                 entity.getObligationId(),
-                Case.Priority.valueOf(entity.getPriority()),
+                Case.priorityFromPersistence(entity.getPriority()),
                 Case.statusFromPersistence(entity.getStatus()),
                 entity.getAssignedAdvisor(),
                 entity.getNextActionAt(),

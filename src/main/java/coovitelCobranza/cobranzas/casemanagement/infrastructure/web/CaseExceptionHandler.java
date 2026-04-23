@@ -2,6 +2,8 @@ package coovitelCobranza.cobranzas.casemanagement.infrastructure.web;
 
 import coovitelCobranza.cobranzas.casemanagement.application.exception.CaseBusinessException;
 import coovitelCobranza.cobranzas.casemanagement.application.exception.CaseNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +21,8 @@ import java.util.Map;
  */
 @RestControllerAdvice
 public class CaseExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(CaseExceptionHandler.class);
 
     /**
      * Maneja excepciones cuando un caso no es encontrado.
@@ -60,11 +64,19 @@ public class CaseExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        // Registramos el stack trace completo para poder diagnosticar 500 inesperados.
+        // Sin esto, cualquier excepción "que se escapa" del try/catch del servicio
+        // (típicamente TransactionSystemException / UnexpectedRollbackException /
+        // fallos de serialización) se perdía sin dejar rastro en logs.
+        log.error("Unhandled exception while processing case-management request: {}",
+                ex.getMessage(), ex);
+
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("error", "Internal server error");
         body.put("message", ex.getMessage());
+        body.put("exceptionType", ex.getClass().getName());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }

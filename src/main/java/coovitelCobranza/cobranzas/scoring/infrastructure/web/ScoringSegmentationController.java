@@ -39,7 +39,7 @@ public class ScoringSegmentationController {
      * @param request calculation parameters
      * @return 201 Created with scoring result
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR')")
     @PostMapping("/calculate")
     public ResponseEntity<ScoringSegmentationResponse> calculate(@RequestBody CalculateScoringRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.calculate(request));
@@ -51,7 +51,7 @@ public class ScoringSegmentationController {
      * @param request scoring lookup request
      * @return 200 OK with scoring data
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/id")
     public ResponseEntity<ScoringSegmentationResponse> getById(@RequestBody GetScoringByIdRequest request) {
         return ResponseEntity.ok(service.getById(request.scoringId()));
@@ -64,7 +64,7 @@ public class ScoringSegmentationController {
      * @param request contains obligationId
      * @return 200 OK with latest scoring
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/obligation")
     public ResponseEntity<ScoringSegmentationResponse> getLatestByObligation(@RequestBody ListScoringByObligationRequest request) {
         return ResponseEntity.ok(service.getLatestByObligation(request.obligationId()));
@@ -77,7 +77,7 @@ public class ScoringSegmentationController {
      * @param request contains clientId
      * @return 200 OK with scoring history
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/client")
     public ResponseEntity<List<ScoringSegmentationResponse>> listByClient(@RequestBody ListScoringByClientRequest request) {
         return ResponseEntity.ok(service.listByCustomer(request.clientId()));

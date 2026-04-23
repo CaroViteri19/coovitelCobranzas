@@ -34,7 +34,7 @@ public class PolicyController {
      * Create a new collection policy.
      * Write operation – ADMINISTRADOR only.
      */
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping
     public ResponseEntity<PolicyResponse> create(@RequestBody CreatePolicyRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
@@ -44,7 +44,7 @@ public class PolicyController {
      * Get a policy by its ID.
      * Read operation – ADMINISTRADOR, SUPERVISOR, AUDITOR.
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/id")
     public ResponseEntity<PolicyResponse> getById(@RequestBody java.util.Map<String, Long> body) {
         return ResponseEntity.ok(service.getById(body.get("policyId")));
@@ -54,7 +54,7 @@ public class PolicyController {
      * List all policies for a given strategy.
      * Read operation – ADMINISTRADOR, SUPERVISOR, AUDITOR.
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AUDITOR')")
     @PostMapping("/search/strategy")
     public ResponseEntity<List<PolicyResponse>> listByStrategy(@RequestBody java.util.Map<String, Long> body) {
         return ResponseEntity.ok(service.listByStrategy(body.get("strategyId")));
@@ -64,7 +64,7 @@ public class PolicyController {
      * List all active policies.
      * Read operation – ADMINISTRADOR, SUPERVISOR, AUDITOR.
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AUDITOR')")
     @GetMapping("/active")
     public ResponseEntity<List<PolicyResponse>> listActive() {
         return ResponseEntity.ok(service.listActive());
@@ -74,7 +74,7 @@ public class PolicyController {
      * Activate a policy.
      * Write operation – ADMINISTRADOR only.
      */
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping("/activate")
     public ResponseEntity<PolicyResponse> activate(@RequestBody java.util.Map<String, Long> body) {
         return ResponseEntity.ok(service.activate(body.get("policyId")));
@@ -84,7 +84,7 @@ public class PolicyController {
      * Deactivate a policy.
      * Write operation – ADMINISTRADOR only.
      */
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping("/deactivate")
     public ResponseEntity<PolicyResponse> deactivate(@RequestBody java.util.Map<String, Long> body) {
         return ResponseEntity.ok(service.deactivate(body.get("policyId")));

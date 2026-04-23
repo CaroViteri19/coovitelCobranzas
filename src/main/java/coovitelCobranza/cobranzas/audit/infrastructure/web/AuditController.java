@@ -34,7 +34,7 @@ public class AuditController {
      * @param request the audit event to register
      * @return 201 Created
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR')")
     @PostMapping("/events")
     public ResponseEntity<Void> registerEvent(@RequestBody RegisterAuditRequest request) {
         service.registerEvent(request);
@@ -47,7 +47,7 @@ public class AuditController {
      * @param request contains entityType and entityId in encrypted body
      * @return list of audit events
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/events/search")
     public ResponseEntity<List<AuditEventResponse>> listEventsByEntity(@RequestBody ListAuditEventsByEntityRequest request) {
         return ResponseEntity.ok(service.listEventsByEntity(request.entityType(), request.entityId()));

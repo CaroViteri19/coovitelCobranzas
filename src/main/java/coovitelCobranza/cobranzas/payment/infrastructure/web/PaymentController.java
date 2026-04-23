@@ -29,7 +29,7 @@ public class PaymentController {
         this.paymentApplicationService = paymentApplicationService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AGENTE')")
     @PostMapping
     public ResponseEntity<PaymentResponse> create(@RequestBody CreatePaymentRequest request) {
         PaymentResponse response = paymentApplicationService.createPayment(request);
@@ -41,42 +41,42 @@ public class PaymentController {
      * Payment en estado PENDING. El frontend puede compartir el link con el
      * cliente por cualquier canal.
      */
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AGENTE')")
     @PostMapping("/generate-link")
     public ResponseEntity<GenerateLinkResponse> generateLink(@Valid @RequestBody GenerateLinkRequest request) {
         GenerateLinkResponse response = paymentApplicationService.generateLink(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/search/id")
     public ResponseEntity<PaymentResponse> getById(@RequestBody GetPaymentByIdRequest request) {
         PaymentResponse response = paymentApplicationService.getById(request.paymentId());
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/search/reference")
     public ResponseEntity<PaymentResponse> getByReference(@RequestBody GetPaymentByReferenceRequest request) {
         PaymentResponse response = paymentApplicationService.getByReference(request.externalReference());
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR','AGENTE','AUDITOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR','AGENTE','AUDITOR')")
     @PostMapping("/search/obligation")
     public ResponseEntity<List<PaymentResponse>> listByObligation(@RequestBody ListPaymentsByObligationRequest request) {
         List<PaymentResponse> response = paymentApplicationService.listByObligation(request.obligationId());
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR')")
     @PostMapping("/confirm")
     public ResponseEntity<PaymentResponse> confirmPayment(@RequestBody ConfirmPaymentRequest request) {
         PaymentResponse response = paymentApplicationService.confirmPayment(request);
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','SUPERVISOR')")
     @PostMapping("/reject")
     public ResponseEntity<PaymentResponse> rejectPayment(@RequestBody RejectPaymentRequest request) {
         PaymentResponse response = paymentApplicationService.rejectPayment(request.paymentId());

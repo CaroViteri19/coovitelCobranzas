@@ -116,6 +116,34 @@ public class Case {
     }
 
     /**
+     * Convierte el priority almacenado en BD (incluyendo posibles valores
+     * legacy en español) al enum canónico {@link Priority}. Devuelve
+     * {@link Priority#MEDIUM} como fallback cuando el valor es desconocido,
+     * para evitar reventar el GET /pending ante data sucia.
+     *
+     * @param value valor persistido, puede ser null
+     * @return enum Priority correspondiente
+     */
+    public static Priority priorityFromPersistence(String value) {
+        if (value == null || value.isBlank()) {
+            return Priority.MEDIUM;
+        }
+        return switch (value.toUpperCase()) {
+            case "LOW", "BAJA" -> Priority.LOW;
+            case "MEDIUM", "MEDIA", "NORMAL" -> Priority.MEDIUM;
+            case "HIGH", "ALTA" -> Priority.HIGH;
+            case "CRITICAL", "CRITICA", "CRÍTICA" -> Priority.CRITICAL;
+            default -> {
+                try {
+                    yield Priority.valueOf(value);
+                } catch (IllegalArgumentException e) {
+                    yield Priority.MEDIUM;
+                }
+            }
+        };
+    }
+
+    /**
      * Assign an advisor to this case and transition to IN_MANAGEMENT status.
      *
      * @param advisor the name or ID of the advisor

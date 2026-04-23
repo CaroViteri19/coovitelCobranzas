@@ -33,20 +33,20 @@ public class UserController {
         this.userManagementService = userManagementService;
     }
 
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @GetMapping("/all")
     public ResponseEntity<List<UserResponse>>  getUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PatchMapping("/status")
     public ResponseEntity<Void> updateStatus(@Valid @RequestBody UpdateUserStatusRequest request) {
         userManagementService.updateUserStatus(request);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PatchMapping("/update")
     public ResponseEntity<Void> updateUser(@Valid @RequestBody UpdateUserRequest request) {
         userManagementService.updateUser(request);

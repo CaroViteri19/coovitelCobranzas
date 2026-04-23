@@ -60,7 +60,7 @@ public class AuthController {
      * @param request Solicitud con el ID del usuario y los roles a asignar.
      * @return Respuesta con mensaje de confirmación.
      */
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping("/role")
     public ResponseEntity<String> assignRole(@Valid @RequestBody UpdateRoleRequest request) {
         return ResponseEntity.ok(authApplicationService.assignRole(request));
@@ -73,7 +73,7 @@ public class AuthController {
      *
      * @return Lista de roles con ID, nombre y descripción.
      */
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     @GetMapping("/roles")
     public ResponseEntity<List<RoleResponse>> getRoles() {
         return ResponseEntity.ok(authApplicationService.getRoles());
